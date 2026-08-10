@@ -8,13 +8,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "platforms")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Platform {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,21 +23,15 @@ public class User {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 150)
-    private String email;
+    @Column(name = "website_url", length = 500)
+    private String websiteUrl;
 
-    @Column(nullable = false, length = 255)
-    private String password;
+    @Column(name = "logo_url", length = 500)
+    private String logoUrl;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "is_active", nullable = false)
     @Builder.Default
-    private String role = "ROLE_USER";
-
-    @Column(length = 100)
-    private String country;
-
-    @Column(length = 100)
-    private String region;
+    private Boolean isActive = true;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

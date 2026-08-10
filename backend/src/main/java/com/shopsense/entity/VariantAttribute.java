@@ -8,36 +8,29 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "variant_attributes", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_variant_attribute_name", columnNames = { "variant_id", "attribute_name" })
+})
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class VariantAttribute {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id", nullable = false)
+    private ProductVariant variant;
 
-    @Column(nullable = false, unique = true, length = 150)
-    private String email;
+    @Column(name = "attribute_name", nullable = false, length = 100)
+    private String attributeName;
 
-    @Column(nullable = false, length = 255)
-    private String password;
-
-    @Column(nullable = false, length = 20)
-    @Builder.Default
-    private String role = "ROLE_USER";
-
-    @Column(length = 100)
-    private String country;
-
-    @Column(length = 100)
-    private String region;
+    @Column(name = "attribute_value", nullable = false, length = 255)
+    private String attributeValue;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -8,36 +8,40 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "products")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, length = 100)
-    private String name;
+    private String brand;
 
-    @Column(nullable = false, unique = true, length = 150)
-    private String email;
+    @Column(length = 150)
+    private String series;
 
-    @Column(nullable = false, length = 255)
-    private String password;
+    @Column(nullable = false, length = 150)
+    private String model;
 
-    @Column(nullable = false, length = 20)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Column(name = "has_variants", nullable = false)
     @Builder.Default
-    private String role = "ROLE_USER";
-
-    @Column(length = 100)
-    private String country;
-
-    @Column(length = 100)
-    private String region;
+    private Boolean hasVariants = false;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
