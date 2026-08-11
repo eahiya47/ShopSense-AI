@@ -75,6 +75,52 @@ public class ConnectorManager {
         }
     }
 
+    public List<NormalizedReview> fetchReviewsFromPlatform(String platformName, ProductVariant variant) {
+        Optional<MarketplaceConnector> connectorOpt = getConnector(platformName);
+        if (connectorOpt.isEmpty()) {
+            log.warn("No connector found for platform: {}", platformName);
+            return Collections.emptyList();
+        }
+
+        MarketplaceConnector connector = connectorOpt.get();
+        try {
+            List<NormalizedReview> reviews = connector.fetchReviews(variant);
+            return reviews != null ? reviews : Collections.emptyList();
+        } catch (Exception e) {
+            log.warn("Review fetching failed for platform {}: {}", platformName, e.getMessage());
+            throw e; // rethrow to allow caller/service to catch and preserve existing DB reviews
+        }
+    }
+
+    public Map<String, List<NormalizedReview>> fetchReviewsForVariant(ProductVariant variant,
+            List<String> activePlatforms) {
+        if (connectors.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Set<String> activeSet = (activePlatforms != null && !activePlatforms.isEmpty())
+                ? activePlatforms.stream().map(String::toLowerCase).collect(Collectors.toSet())
+                : null;
+
+        Map<String, List<NormalizedReview>> reviewMap = new HashMap<>();
+
+        for (MarketplaceConnector connector : connectors) {
+            String platformName = connector.getPlatformName();
+            if (activeSet != null && !activeSet.contains(platformName.toLowerCase())) {
+                continue;
+            }
+
+            try {
+                List<NormalizedReview> reviews = connector.fetchReviews(variant);
+                reviewMap.put(platformName, reviews != null ? reviews : Collections.emptyList());
+            } catch (Exception e) {
+                log.warn("Review fetching failed for platform {}: {}", platformName, e.getMessage());
+            }
+        }
+
+        return reviewMap;
+    }
+
     public Optional<MarketplaceConnector> getConnector(String platformName) {
         if (platformName == null) {
             return Optional.empty();

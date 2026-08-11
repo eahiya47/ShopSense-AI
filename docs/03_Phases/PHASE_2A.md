@@ -1101,20 +1101,47 @@ After verification, Stage 4 must be committed to Git before beginning
 Stage 5.
 
 11. Stage 5 — Review System
-Status
 
-PLANNED
+### Status
 
-Objective
+**NEXT**
 
-Implement the separate recent-review lifecycle.
+### Objective
 
-The system should maintain approximately:
+Implement the review data lifecycle for ShopSense AI.
 
-10–15 recent relevant reviews
-per ProductVariant + Platform
+Reviews are handled separately from live marketplace price comparison.
 
-Review flow:
+The system should maintain a small, recent, relevant set of reviews for each
+ProductVariant + Platform combination.
+
+The review system is designed primarily to support:
+
+- Product detail pages
+- Review summaries
+- Platform comparison context
+- Future AI analysis
+
+---
+
+## 11.1 Review Storage Strategy
+
+The system should temporarily store approximately:
+
+10–15 recent relevant reviews per:
+
+```text
+ProductVariant + Platform
+
+The system does NOT need to permanently store every review retrieved from a
+marketplace.
+
+The stored review set represents the currently relevant recent review
+sample.
+
+11.2 Review Lifecycle
+
+The review lifecycle is separate from live price comparison.
 
 Marketplace Connector
         |
@@ -1122,22 +1149,272 @@ Marketplace Connector
 Recent Reviews
         |
         v
-Select relevant reviews
+Review Selection
         |
         v
 Temporary Review Storage
         |
         v
-Weekly Refresh
+Product Details / AI
 
-The system should replace the temporary review set during successful
-refreshes.
+Reviews are refreshed approximately weekly.
 
-If a refresh fails, existing valid review data should not be unnecessarily
-deleted.
+Normal product comparison requests do NOT retrieve reviews from every
+marketplace again.
 
-Reviews are not retrieved from every marketplace on every comparison
-request.
+11.3 Review Refresh
+
+During a review refresh:
+
+Identify the ProductVariant and Platform.
+Retrieve recent reviews through the appropriate marketplace connector.
+Select approximately 10–15 relevant recent reviews.
+Validate and normalize the review data.
+Replace the existing temporary review set with the refreshed set.
+
+A successful refresh should result in the stored review set representing
+the latest available review sample.
+
+11.4 Refresh Failure
+
+If a marketplace review refresh fails:
+
+Existing valid review set
+        |
+        v
+Refresh attempt
+        |
+        v
+FAILED
+        |
+        v
+Keep existing review data
+
+The system must NOT delete valid existing reviews simply because a refresh
+failed.
+
+The failure should be logged appropriately.
+
+The next scheduled refresh can attempt the operation again.
+
+11.5 Review Data
+
+A stored review may contain information such as:
+
+Review ID or marketplace review identifier
+ProductVariant
+Platform
+Reviewer name where appropriate
+Rating
+Review title
+Review text
+Review date
+Verified purchase indicator where available
+Source/reference URL where available
+Retrieved timestamp
+
+Do not store unnecessary personal information.
+
+11.6 Review Relevance
+
+The review selection process should prioritize recent and relevant reviews.
+
+The system does not need to store every review returned by a marketplace.
+
+The selection should produce approximately 10–15 reviews per platform.
+
+If fewer valid recent reviews are available, store the available valid reviews
+rather than inventing or duplicating reviews.
+
+11.7 Temporary Review Data
+
+The review storage is intended to represent the current review sample.
+
+The system does not need permanent historical review versions.
+
+Example:
+
+Week 1
+10 recent reviews
+        |
+        v
+Week 2 refresh
+        |
+        v
+Replace with latest 10–15 reviews
+
+Old review records that are no longer part of the current review set may be
+removed or replaced according to the implementation strategy.
+
+11.8 Review API
+
+Implement a public endpoint for retrieving the currently stored review
+sample for a selected ProductVariant.
+
+Endpoint:
+
+GET /api/v1/variants/{variantId}/reviews
+
+The endpoint should return:
+
+ProductVariant information where appropriate
+Platform
+Current stored reviews
+Review count
+Review freshness/retrieval information where appropriate
+
+The endpoint reads the currently stored review data.
+
+It does NOT trigger a marketplace review refresh.
+
+11.9 Review Refresh Architecture
+
+The refresh mechanism must be separated from the normal user request flow.
+
+Conceptually:
+
+                 User Request
+                      |
+                      v
+              Review API
+                      |
+                      v
+             Stored Reviews
+
+Separately:
+
+        Scheduled Refresh
+               |
+               v
+      Marketplace Connector
+               |
+               v
+       Recent Reviews
+               |
+               v
+       Review Processing
+               |
+               v
+      Temporary Storage
+
+The user-facing Review API must not wait for a marketplace refresh.
+
+11.10 Marketplace Connector Responsibility
+
+The marketplace connector is responsible for obtaining marketplace-specific
+review data.
+
+The review service is responsible for:
+
+Processing connector review results
+Selecting the recent relevant sample
+Persisting the current review set
+Handling refresh failures
+Serving stored reviews
+
+Marketplace-specific parsing must remain inside the connector layer.
+
+11.11 Connector Review Support
+
+The existing MarketplaceConnector architecture should be extended only
+as required to support review retrieval.
+
+Do not break the existing offer/comparison functionality.
+
+The connector abstraction should remain marketplace-independent.
+
+Future connectors must be able to support reviews without requiring changes
+to the core review service architecture.
+
+11.12 Review API Security
+
+The review endpoint is public.
+
+No JWT authentication is required.
+
+Users must be able to view reviews without logging in.
+
+11.13 Error Handling
+
+Use the existing GlobalExceptionHandler.
+
+Expected behavior:
+
+Invalid variant ID
+    → 404 RESOURCE_NOT_FOUND
+
+No stored reviews
+    → Valid response with empty review list
+
+Refresh failure
+    → Existing stored reviews remain available
+
+Unexpected backend failure
+    → Standardized 500 response
+
+Do not expose marketplace connector internals or stack traces.
+
+11.14 Testing
+
+Stage 5 must test:
+
+Review retrieval from a connector.
+Review normalization.
+Selection of approximately 10–15 recent reviews.
+Fewer than 10 available reviews.
+More than 15 available reviews.
+Review storage for ProductVariant + Platform.
+Successful weekly refresh behavior.
+Failed refresh preserves existing reviews.
+Review API returns stored reviews.
+Review API does not trigger a marketplace refresh.
+Missing variant returns 404.
+No reviews returns a valid empty response.
+Multiple platforms maintain separate review sets.
+Existing Stage 1–4 tests continue to pass.
+
+Use deterministic mock review data.
+
+Do not use real external marketplace APIs in tests.
+
+11.15 Out of Scope
+
+Do NOT implement in Stage 5:
+
+Gemini review summaries
+AI-generated review analysis
+Permanent review history
+Sentiment prediction
+Review authenticity detection
+Real marketplace review APIs
+Web scraping
+Wishlist
+Search history
+Frontend review UI
+
+AI processing will be implemented in a later stage.
+
+11.16 Completion Criteria
+
+Stage 5 is complete when:
+
+Review data model exists.
+Marketplace connector review support exists.
+Recent reviews can be retrieved and normalized.
+Approximately 10–15 reviews are maintained per ProductVariant + Platform.
+Review refresh is separate from the normal user request.
+Successful refresh replaces the current temporary review set.
+Failed refresh preserves existing valid reviews.
+Public review API works.
+Multiple platforms maintain independent review sets.
+Review API does not trigger live marketplace retrieval.
+All Stage 5 tests pass.
+All previous stage tests continue to pass.
+No Gemini or AI review analysis is implemented.
+No frontend changes are required.
+
+After verification, Stage 5 must be committed to Git before beginning
+Stage 6.
 
 12. Stage 6 — User Features
 Status
