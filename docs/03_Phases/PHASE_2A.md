@@ -414,43 +414,234 @@ Gemini
 Wishlist
 Search history
 Frontend product pages
+
 9. Stage 3 — Marketplace Connector Framework
-Status
 
-PLANNED
+### Status
 
-Objective
+**NEXT**
 
-Create an isolated marketplace integration architecture.
+### Objective
 
-The core abstraction will be:
+Create the marketplace integration abstraction that allows ShopSense AI
+to communicate with multiple marketplace platforms through a common
+interface.
 
-MarketplaceConnector
+This stage establishes the connector architecture using mock marketplace
+implementations.
 
-with a manager/orchestrator responsible for coordinating connectors.
+Real external marketplace integrations are NOT required in this stage.
 
-Initial connectors will be mock implementations:
+---
 
-AmazonConnector
-FlipkartConnector
-CromaConnector
+## 9.1 Connector Architecture
 
-The application must not depend directly on marketplace-specific response
-formats.
+The core abstraction is:
 
-Connectors will return normalized marketplace information.
-
-The intended structure is:
-
+```text
 MarketplaceConnector
         |
         +-- AmazonConnector
         +-- FlipkartConnector
         +-- CromaConnector
+        |
         +-- Future connectors
 
-Real marketplace integrations can be introduced later without changing
-the core comparison architecture.
+A ConnectorManager is responsible for coordinating the available
+marketplace connectors.
+
+The core application must communicate with the MarketplaceConnector
+interface rather than directly depending on a specific marketplace.
+
+9.2 MarketplaceConnector
+
+The connector interface should define the common operations required by
+ShopSense AI to retrieve marketplace information for a selected product
+variant.
+
+The interface should be marketplace-independent.
+
+Marketplace-specific implementation details must remain inside the
+individual connector.
+
+9.3 Mock Connectors
+
+Create mock implementations for the initial platforms:
+
+Amazon
+Flipkart
+Croma
+
+The mock connectors should return realistic, deterministic marketplace
+data.
+
+They must not call external websites or APIs.
+
+Example:
+
+AmazonConnector
+      |
+      v
+Mock Amazon offer data
+
+FlipkartConnector
+      |
+      v
+Mock Flipkart offer data
+
+CromaConnector
+      |
+      v
+Mock Croma offer data
+
+The rest of the application must not need to know that these are mock
+connectors.
+
+9.4 Normalized Marketplace Data
+
+Different marketplaces may use different response formats.
+
+ShopSense AI must normalize marketplace information into a common internal
+representation.
+
+The normalized offer should support information such as:
+
+Platform
+Product variant
+Current price
+Original price
+Seller
+Seller rating
+Availability
+Delivery information
+Offer information
+Product URL
+Retrieval timestamp
+
+The normalized model must not expose marketplace-specific response
+structures to the rest of the application.
+
+9.5 ConnectorManager
+
+ConnectorManager coordinates marketplace connectors.
+
+Its responsibilities include:
+
+Maintain the available connectors.
+Request marketplace data from connectors.
+Associate results with the appropriate platform.
+Normalize connector results where necessary.
+Isolate connector failures.
+Return available marketplace results to the calling service.
+
+The manager must not contain marketplace-specific scraping or parsing
+logic.
+
+9.6 Failure Isolation
+
+A failure in one marketplace connector must not prevent other connectors
+from returning results.
+
+Example:
+
+Amazon       → SUCCESS
+Flipkart     → SUCCESS
+Croma        → FAILED
+
+The result should still contain:
+
+Amazon       → Available
+Flipkart     → Available
+Croma        → Unavailable
+
+Possible connector states include:
+
+AVAILABLE
+UNAVAILABLE
+NO_OFFER
+
+The system must not invent marketplace data when a connector fails.
+
+9.7 Connector Timeout and Exceptions
+
+The connector architecture must support failures such as:
+
+Network failure
+Timeout
+Invalid response
+Marketplace unavailable
+No offer
+Unexpected connector exception
+
+At this stage, mock connectors may simulate failures for testing.
+
+The connector manager should isolate failures so that one failed connector
+does not terminate the entire marketplace operation.
+
+9.8 Database Interaction
+
+Stage 3 establishes the connector framework.
+
+The connectors should retrieve and return normalized marketplace information.
+
+The actual comparison workflow and current PlatformOffer persistence
+will be implemented in Stage 4.
+
+Do not introduce permanent price history.
+
+9.9 Out of Scope
+
+Do NOT implement in Stage 3:
+
+Real Amazon API integration
+Real Flipkart API integration
+Real Croma API integration
+Web scraping
+Marketplace authentication credentials
+Product comparison API
+Best-offer selection
+Permanent price history
+Review retrieval
+Review refresh
+Gemini
+AI summaries
+Wishlist
+Search history
+Frontend marketplace comparison UI
+9.10 Testing
+
+Stage 3 must test:
+
+Each mock connector returns normalized data.
+ConnectorManager can coordinate multiple connectors.
+Multiple successful connectors return multiple results.
+One failed connector does not prevent other results.
+NO_OFFER is handled separately from UNAVAILABLE.
+Connector exceptions are isolated.
+No marketplace-specific response structure leaks outside the connector
+layer.
+
+The tests should use deterministic mock data.
+
+9.11 Completion Criteria
+
+Stage 3 is complete when:
+
+MarketplaceConnector exists.
+ConnectorManager exists.
+Amazon mock connector exists.
+Flipkart mock connector exists.
+Croma mock connector exists.
+Normalized marketplace data model exists.
+Connector failures are isolated.
+Connector tests pass.
+Existing Stage 1 and Stage 2 tests continue to pass.
+No real marketplace integration is required.
+No frontend changes are required.
+No Gemini functionality is added.
+
+After verification, Stage 3 must be committed to Git before beginning
+Stage 4.
 
 10. Stage 4 — Product Comparison
 Status
