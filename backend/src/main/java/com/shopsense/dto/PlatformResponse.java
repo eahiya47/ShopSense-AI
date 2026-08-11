@@ -5,16 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductVariantResponse {
+public class PlatformResponse {
     private Long id;
-    private Long productId;
     private String name;
-    private Boolean isDefault;
-    private List<VariantAttributeResponse> attributes;
+    private String websiteUrl;
+    private String logoUrl;
 }

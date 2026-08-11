@@ -644,63 +644,461 @@ After verification, Stage 3 must be committed to Git before beginning
 Stage 4.
 
 10. Stage 4 — Product Comparison
-Status
 
-PLANNED
+### Status
 
-Objective
+**NEXT**
 
-Compare the selected product variant across marketplaces.
+### Objective
 
-Flow:
+Connect the Product Catalog with the Marketplace Connector Framework to
+provide a unified comparison of the selected ProductVariant across
+multiple platforms.
 
+This is the stage where ShopSense AI begins performing its core
+price-comparison functionality.
+
+The comparison must use the current marketplace data retrieved through the
+connector framework.
+
+---
+
+## 10.1 Comparison Flow
+
+The comparison flow is:
+
+```text
 Selected ProductVariant
         |
         v
-Connector Manager
-        |
-        +-- Amazon
-        +-- Flipkart
-        +-- Croma
+Comparison Service
         |
         v
-Normalized Offers
+ConnectorManager
+        |
+        +----------------+----------------+
+        |                |                |
+        v                v                v
+     Amazon          Flipkart          Croma
+     Connector       Connector        Connector
+        |                |                |
+        +----------------+----------------+
+                         |
+                         v
+                Normalized Results
+                         |
+                         v
+              Best Offer Per Platform
+                         |
+                         v
+                Comparison Response
+
+The comparison service must operate on the specific ProductVariant selected
+by the user.
+
+The system must not compare different product variants as if they were the
+same configuration.
+
+Example:
+
+iPhone 16 Pro 256GB
+
+must be compared against the corresponding 256GB configuration offered by
+each platform.
+
+10.2 Comparison Service
+
+Create a dedicated comparison service responsible for:
+
+Receiving a ProductVariant ID.
+Validating that the ProductVariant exists.
+Requesting marketplace data through ConnectorManager.
+Receiving normalized connector results.
+Selecting the best representative offer from each platform.
+Updating the current PlatformOffer records where appropriate.
+Returning a unified comparison response.
+
+The comparison service must not contain marketplace-specific logic.
+
+Marketplace-specific behavior remains inside the connector layer.
+
+10.3 Best Offer Per Platform
+
+The system must select the best available offer from each platform.
+
+It must NOT select only the single cheapest offer globally.
+
+Example:
+
+Amazon
+    Offer A → ₹115,999
+    Offer B → ₹114,999
+    Offer C → ₹116,499
+
+    Selected:
+    ₹114,999
+
+
+Flipkart
+    Offer A → ₹114,499
+    Offer B → ₹113,999
+    Offer C → ₹115,299
+
+    Selected:
+    ₹113,999
+
+
+Croma
+    Offer A → ₹114,490
+
+    Selected:
+    ₹114,490
+
+The comparison result therefore contains:
+
+Amazon    → ₹114,999
+Flipkart  → ₹113,999
+Croma     → ₹114,490
+
+Each platform gets its own best representative offer.
+
+If the connector architecture currently returns only one normalized offer
+per platform, that result is treated as that platform's representative
+offer.
+
+The architecture should remain extensible for connectors that may return
+multiple offers in the future.
+
+10.4 Current PlatformOffer Storage
+
+The existing PlatformOffer entity is used to maintain the current
+representative offer for each:
+
+ProductVariant + Platform
+
+When fresh marketplace information is received:
+
+Existing PlatformOffer
         |
         v
-Best Offer Per Platform
+Fresh marketplace data
         |
         v
-Comparison Response
+Update current PlatformOffer
 
-The system should select the best representative offer from each platform.
+The system should update the existing current offer where the corresponding
+ProductVariant and Platform already exist.
 
-It should not simply return one global cheapest offer.
+A new record may be created when no current offer exists.
 
-Each platform can have:
+10.5 No Permanent Price History
 
-Price
-Original price
+Permanent historical price storage is NOT implemented in Stage 4.
+
+The system maintains only the current representative offer.
+
+Example:
+
+Monday:
+₹114,999
+
+        ↓
+
+Wednesday:
+₹113,999
+
+        ↓
+
+Current stored value:
+₹113,999
+
+The previous value does not need to be permanently retained.
+
+The architecture must remain extensible so a future PriceHistory
+capability can be introduced without redesigning the comparison service.
+
+10.6 Comparison Response
+
+Create an API response DTO representing the comparison result.
+
+The response should identify:
+
+ProductVariant
+Platform
+Current price
+Original price where available
+Currency
 Seller
 Seller rating
 Availability
-Delivery
-Offers
+Availability details
+Delivery information
+Offer information
 Product URL
+Retrieval timestamp
+Platform status
 
-If one platform fails:
+The response should make it clear which platform each offer belongs to.
 
-Amazon       SUCCESS
-Flipkart     SUCCESS
-Croma        FAILED
+10.7 Public Comparison API
 
-the comparison must still return:
+Implement:
 
-Amazon       Available
-Flipkart     Available
-Croma        Unavailable
+GET /api/v1/variants/{variantId}/comparison
+Access
 
-A marketplace failure must not prevent other marketplaces from being
-displayed.
+Public.
+
+No JWT authentication is required.
+
+Request
+
+The selected variantId identifies the exact product configuration to
+compare.
+
+Example:
+
+GET /api/v1/variants/25/comparison
+Response
+
+Return the current comparison information available from the supported
+platforms.
+
+10.8 Marketplace Failure Isolation
+
+A failed marketplace must not prevent successful platforms from appearing.
+
+Example:
+
+Amazon
+    → SUCCESS
+
+Flipkart
+    → SUCCESS
+
+Croma
+    → UNAVAILABLE
+
+The API response should still contain:
+
+Amazon
+    → Available offer
+
+Flipkart
+    → Available offer
+
+Croma
+    → Unavailable
+
+The comparison service must not fabricate a price or offer for an
+unavailable platform.
+
+Possible platform statuses include:
+
+AVAILABLE
+UNAVAILABLE
+NO_OFFER
+
+These statuses must remain distinguishable.
+
+10.9 Connector Failure Handling
+
+The comparison service must rely on ConnectorManager for connector
+execution and failure isolation.
+
+Possible failures include:
+
+Connector timeout
+Network failure
+Invalid marketplace response
+Connector exception
+Marketplace unavailable
+No offer available
+
+One connector failure must not terminate the entire comparison operation.
+
+10.10 Comparison Data Freshness
+
+Marketplace comparison information is considered live/current data.
+
+When a comparison request is made, the connector framework should retrieve
+current marketplace information.
+
+The system must not rely only on stale database prices when a live
+connector is available.
+
+The current PlatformOffer records are updated as part of processing fresh
+marketplace information.
+
+The stored offer therefore represents the latest successfully retrieved
+current information.
+
+10.11 Product Validation
+
+Before performing comparison:
+
+Verify the ProductVariant exists.
+Retrieve its associated Product.
+Confirm that the selected variant is valid for that Product.
+Request marketplace information for that exact variant.
+
+If the variant does not exist:
+
+404 RESOURCE_NOT_FOUND
+
+If the variant exists but no platform has an available offer:
+
+Return a valid comparison response indicating that no offers are
+currently available.
+
+Do not return fabricated pricing.
+
+10.12 Database Interaction
+
+Stage 4 may read and update:
+
+ProductVariant
+Platform
+PlatformOffer
+
+The comparison service must use the existing JPA repositories.
+
+Do not introduce a separate permanent price-history table.
+
+Do not modify the existing Product/Variant architecture.
+
+10.13 Architecture Separation
+
+The intended responsibility boundaries are:
+
+ComparisonController
+        |
+        v
+ComparisonService
+        |
+        v
+ConnectorManager
+        |
+        v
+MarketplaceConnector
+        |
+        v
+NormalizedOffer
+        |
+        v
+ComparisonService
+        |
+        +--> PlatformOfferRepository
+        |
+        v
+ComparisonResponse
+
+Responsibilities:
+
+ComparisonController
+Receive HTTP request.
+Validate/extract path parameters.
+Delegate to ComparisonService.
+Return HTTP response.
+ComparisonService
+Validate ProductVariant.
+Coordinate comparison.
+Select representative platform offers.
+Update current PlatformOffer records.
+Build comparison response.
+ConnectorManager
+Coordinate marketplace connectors.
+Isolate connector failures.
+Return normalized connector results.
+MarketplaceConnector
+Handle marketplace-specific communication.
+Return normalized marketplace data.
+PlatformOfferRepository
+Persist current platform offers.
+10.14 Error Handling
+
+Use the existing GlobalExceptionHandler.
+
+Expected behavior:
+
+Invalid variant ID
+    → 404 RESOURCE_NOT_FOUND
+
+No offers available
+    → Valid comparison response with unavailable/no-offer statuses
+
+Connector failure
+    → Other platform results still returned
+
+Unexpected backend failure
+    → Existing standardized 500 response
+
+Do not expose stack traces, connector internals, or database details.
+
+10.15 Testing
+
+Stage 4 must include tests for:
+
+Successful comparison across all mock platforms.
+Correct ProductVariant validation.
+Correct ProductVariant → Product relationship.
+Best offer selection per platform.
+Current PlatformOffer creation when no record exists.
+Current PlatformOffer update when a record already exists.
+One connector failure while other platforms succeed.
+NO_OFFER handling.
+UNAVAILABLE handling.
+Variant not found → 404.
+No available offers.
+Comparison endpoint is accessible without JWT.
+Existing Stage 1, Stage 2, and Stage 3 tests continue to pass.
+
+Tests must use deterministic mock marketplace connectors.
+
+Do not use real external marketplace APIs in tests.
+
+10.16 Out of Scope
+
+Do NOT implement in Stage 4:
+
+Permanent price history
+Price graphs
+Price prediction
+Real marketplace APIs
+Web scraping
+Review retrieval
+Weekly review refresh
+Gemini / AI summaries
+Wishlist
+Search history
+Price alerts
+Frontend comparison UI
+
+These features belong to later stages.
+
+10.17 Completion Criteria
+
+Stage 4 is complete when:
+
+ComparisonService exists.
+ComparisonController exists.
+GET /api/v1/variants/{variantId}/comparison works.
+The exact selected ProductVariant is compared.
+ConnectorManager supplies marketplace results.
+Best offer from each platform is selected.
+Current PlatformOffer records are created or updated.
+Permanent price history is not introduced.
+Marketplace failures are isolated.
+AVAILABLE, UNAVAILABLE, and NO_OFFER remain distinguishable.
+Comparison uses current marketplace information.
+The API returns a clean comparison DTO.
+All Stage 4 tests pass.
+All previous stage tests continue to pass.
+No frontend changes are required.
+No AI/review functionality is added.
+
+After verification, Stage 4 must be committed to Git before beginning
+Stage 5.
 
 11. Stage 5 — Review System
 Status

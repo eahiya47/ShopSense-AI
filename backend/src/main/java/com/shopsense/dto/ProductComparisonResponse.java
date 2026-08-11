@@ -11,10 +11,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductVariantResponse {
-    private Long id;
-    private Long productId;
-    private String name;
-    private Boolean isDefault;
-    private List<VariantAttributeResponse> attributes;
+public class ProductComparisonResponse {
+    private ProductVariantResponse variant;
+    private List<ComparisonOfferResponse> offers;
+    private List<PlatformStatusResponse> platformStatus;
 }
