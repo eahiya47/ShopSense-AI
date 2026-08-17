@@ -9,22 +9,29 @@ import com.shopsense.dto.ReviewResponse;
 import com.shopsense.dto.VariantReviewsResponse;
 import com.shopsense.dto.ai.AIAnalysisResponse;
 import com.shopsense.dto.ai.AIStructuredInput;
+import com.shopsense.entity.AISummary;
 import com.shopsense.entity.Product;
 import com.shopsense.entity.ProductVariant;
 import com.shopsense.exception.ResourceNotFoundException;
+import com.shopsense.repository.AISummaryRepository;
 import com.shopsense.repository.ProductSpecificationRepository;
 import com.shopsense.repository.ProductVariantRepository;
 import com.shopsense.repository.VariantAttributeRepository;
 import com.shopsense.service.ComparisonService;
 import com.shopsense.service.ReviewService;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import com.shopsense.repository.PlatformOfferRepository;
+import com.shopsense.repository.ReviewRepository;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -38,6 +45,13 @@ public class GeminiAIService implements AIService {
         private final ReviewService reviewService;
         private final GeminiClient geminiClient;
         private final ObjectMapper objectMapper;
+        private final AISummaryRepository aiSummaryRepository;
+        private final PlatformOfferRepository platformOfferRepository;
+        private final ReviewRepository reviewRepository;
+
+        @Value("${shopsense.ai.cache.ttl-hours:24}")
+        @Setter
+        private long ttlHours = 24;
 
         @Override
         public AIAnalysisResponse analyzeVariant(Long variantId) {
@@ -48,18 +62,118 @@ public class GeminiAIService implements AIService {
                 Product product = variant.getProduct();
                 String productName = product.getBrand() + " " + product.getModel();
 
+                // 1. Check AI summary cache and data freshness
+                try {
+                        Optional<AISummary> cachedOpt = aiSummaryRepository.findByProductVariantId(variantId);
+                        if (cachedOpt.isPresent()) {
+                                AISummary cached = cachedOpt.get();
+                                if (isCacheFresh(cached, variantId)) {
+                                        try {
+                                                AIAnalysisResponse response = objectMapper.readValue(
+                                                                cached.getSummary(),
+                                                                AIAnalysisResponse.class);
+                                                log.info("AI Analysis cache hit for variant id: {}", variantId);
+                                                return response;
+                                        } catch (Exception parseEx) {
+                                                log.warn("Failed to parse cached AI summary JSON for variant id: {}. Regenerating.",
+                                                                variantId);
+                                        }
+                                }
+                        }
+                } catch (Exception e) {
+                        log.error("AI Analysis cache lookup failed for variant id: {}. Continuing with fresh generation. Cause: {}",
+                                        variantId, e.getMessage());
+                }
+
+                // 2. Cache miss, expired, or read failure -> gather fresh facts and invoke
+                // Gemini
                 AIStructuredInput input = buildStructuredInput(product, variant);
 
                 try {
                         String prompt = buildPrompt(input);
                         String rawResponse = geminiClient.generateContent(prompt);
-                        return parseAndValidateResponse(rawResponse, variant.getId(), productName,
+                        AIAnalysisResponse response = parseAndValidateResponse(rawResponse, variant.getId(),
+                                        productName,
                                         variant.getVariantName());
+
+                        // Save to cache only if successful and not fallback
+                        if (!isFallbackResponse(response)) {
+                                try {
+                                        saveToCache(variant, response);
+                                } catch (Exception cacheSaveEx) {
+                                        log.error("Failed to save AI analysis to cache for variant id: {}. Cause: {}",
+                                                        variantId, cacheSaveEx.getMessage());
+                                }
+                        }
+
+                        return response;
                 } catch (Exception e) {
                         log.error("AI Analysis failed for variant id: {}. Returning safe fallback. Cause: {}",
                                         variantId, e.getMessage());
                         return buildFallbackResponse(variant.getId(), productName, variant.getVariantName());
                 }
+        }
+
+        private boolean isFallbackResponse(AIAnalysisResponse response) {
+                return response != null && "AI product analysis is temporarily unavailable for this variant."
+                                .equals(response.getSummary());
+        }
+
+        private boolean isCacheFresh(AISummary cached, Long variantId) {
+                // 1. TTL Expiration Check
+                if (!LocalDateTime.now().isBefore(cached.getExpiresAt())) {
+                        log.info("AI Analysis cache expired for variant id: {}. Regenerating.", variantId);
+                        return false;
+                }
+
+                LocalDateTime generatedAt = cached.getGeneratedAt();
+
+                // 2. Marketplace Offer Freshness Check
+                try {
+                        Optional<LocalDateTime> latestOfferOpt = platformOfferRepository
+                                        .findLatestLastUpdatedAtByProductVariantId(variantId);
+                        if (latestOfferOpt.isPresent() && latestOfferOpt.get().isAfter(generatedAt)) {
+                                log.info("AI Analysis cache stale for variant id: {} due to updated PlatformOffer. Regenerating.",
+                                                variantId);
+                                return false;
+                        }
+                } catch (Exception e) {
+                        log.error("Failed to check PlatformOffer freshness for variant id: {}. Bypassing cache. Cause: {}",
+                                        variantId, e.getMessage());
+                        return false;
+                }
+
+                // 3. Review Freshness Check
+                try {
+                        Optional<LocalDateTime> latestReviewOpt = reviewRepository
+                                        .findLatestFetchedAtByProductVariantId(variantId);
+                        if (latestReviewOpt.isPresent() && latestReviewOpt.get().isAfter(generatedAt)) {
+                                log.info("AI Analysis cache stale for variant id: {} due to updated Review sample. Regenerating.",
+                                                variantId);
+                                return false;
+                        }
+                } catch (Exception e) {
+                        log.error("Failed to check Review freshness for variant id: {}. Bypassing cache. Cause: {}",
+                                        variantId, e.getMessage());
+                        return false;
+                }
+
+                return true;
+        }
+
+        private void saveToCache(ProductVariant variant, AIAnalysisResponse response) throws Exception {
+                String jsonPayload = objectMapper.writeValueAsString(response);
+                LocalDateTime now = LocalDateTime.now();
+                LocalDateTime expiresAt = now.plusHours(ttlHours);
+
+                AISummary summary = aiSummaryRepository.findByProductVariantId(variant.getId())
+                                .orElseGet(() -> AISummary.builder().productVariant(variant).build());
+
+                summary.setSummary(jsonPayload);
+                summary.setGeneratedAt(now);
+                summary.setExpiresAt(expiresAt);
+
+                aiSummaryRepository.save(summary);
         }
 
         private AIStructuredInput buildStructuredInput(Product product, ProductVariant variant) {

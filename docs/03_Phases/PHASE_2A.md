@@ -2423,34 +2423,87 @@ No permanent AI history is introduced.
 After verification, Stage 7 must be committed to Git before beginning
 Stage 8.
 
-14. Stage 8 — AI Cache
-Status
+14. Stage 8 - AI Cache
 
-PLANNED
+The AI cache will use a database-backed JPA entity named `AISummary` mapped
+to the `ai_summaries` table.
 
-AI summaries should be cached to reduce unnecessary Gemini requests.
+Each ProductVariant has one current AI cache entry.
 
-The cache should be associated with the selected product variant.
+A unique constraint must exist on:
 
-Conceptually:
+```text
+product_variant_id
+
+The cache stores the complete AIAnalysisResponse representation so that
+a valid cache hit can reconstruct the same response without contacting
+Gemini.
+
+The cache entry contains:
+
+id
+productVariant
+summary payload
+generatedAt
+expiresAt
+
+The default cache TTL is 24 hours and must be configurable through
+application properties:
+
+shopsense.ai.cache.ttl-hours=24
+
+The cache is an optimization only.
+
+Cache read failures and cache write failures must never cause the AI analysis
+request to fail.
+
+When a valid cache entry exists:
 
 AI Request
-    |
-    v
-Check Cache
-   / \
- YES  NO
-  |    |
-  v    v
-Return Gemini
-       |
-       v
-     Cache
+    ↓
+Cache Lookup
+    ↓
+Valid Entry
+    ↓
+Return Cached AIAnalysisResponse
 
-The cache is an optimization.
+Gemini must not be called on a valid cache hit.
 
-A cache failure must not prevent the AI service from attempting fresh
-generation when appropriate.
+When the cache is missing or expired:
+
+AI Request
+    ↓
+Cache Lookup
+    ↓
+Miss / Expired
+    ↓
+Gather current ProductVariant data
+    ↓
+Gather current comparison data
+    ↓
+Gather current review data
+    ↓
+Gemini
+    ↓
+Validate AI response
+    ↓
+Update AISummary
+    ↓
+Return AIAnalysisResponse
+
+The cache must not silently return stale AI analysis after its expiration
+time.
+
+The cache implementation must preserve the existing safe AI fallback
+behavior. If Gemini fails, the request must return the existing safe
+unavailable response and must not store fabricated or unavailable fallback
+content as a successful AI cache entry.
+
+The AI cache must not modify authoritative product, marketplace, or review
+data.
+
+No permanent AI history is introduced. The ai_summaries table represents
+the current cache entry for each ProductVariant.
 
 15. Stage 9 — Frontend Product Integration
 Status
