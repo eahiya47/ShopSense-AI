@@ -40,6 +40,31 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorDetails> handleDuplicateResourceException(DuplicateResourceException ex,
+            WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "RESOURCE_CONFLICT",
+                ex.getMessage(),
+                request.getDescription(false).replace("uri=", ""));
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorDetails> handleDataIntegrityViolationException(
+            org.springframework.dao.DataIntegrityViolationException ex,
+            WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "RESOURCE_CONFLICT",
+                "Product is already in your wishlist.",
+                request.getDescription(false).replace("uri=", ""));
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorDetails> handleBadRequestException(BadRequestException ex, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(

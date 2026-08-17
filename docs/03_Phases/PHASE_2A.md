@@ -1417,34 +1417,478 @@ After verification, Stage 5 must be committed to Git before beginning
 Stage 6.
 
 12. Stage 6 — User Features
-Status
 
-PLANNED
+### Status
 
-Implement authenticated user functionality.
+**NEXT**
+
+### Objective
+
+Implement authenticated user-specific functionality for ShopSense AI.
+
+Stage 6 introduces:
+
+- Wishlist
+- Search History
+
+Both features are associated with the authenticated User from Phase 1.
+
+These features must not interfere with the public product catalog,
+marketplace comparison, or review APIs.
+
+---
+
+## 12.1 User Feature Architecture
+
+The intended architecture is:
+
+```text
+Authenticated User
+        |
+        +--------------------+
+        |                    |
+        v                    v
+     Wishlist          Search History
+        |                    |
+        v                    v
+ ProductVariant         Search Query
+
+
+User-specific data must always be associated with the authenticated user.
+
+The application must obtain the user identity from the authenticated JWT
+security context.
+
+Do not accept a user ID from the client as the source of authorization.
+
+12.2 Wishlist
+Objective
+
+Allow authenticated users to save ProductVariants that they are
+interested in.
+
+A wishlist entry belongs to:
+
+User + ProductVariant
+
+It does NOT belong to a marketplace or PlatformOffer.
+
+Example:
+
+User
+ |
+ +-- iPhone 16 Pro 256GB
+ |
+ +-- Laptop 16GB / 1TB
+
+The platform and price can change independently after the product is added
+to the wishlist.
+
+12.2.1 Wishlist Data Model
+
+Create a wishlist entity representing:
+
+Wishlist entry ID
+User
+ProductVariant
+Created timestamp
+
+The relationship must be:
+
+User
+  |
+  +-- WishlistEntry
+          |
+          +-- ProductVariant
+
+Add a database-level unique constraint for:
+
+(user_id, product_variant_id)
+
+This prevents duplicate wishlist entries.
+
+12.2.2 Wishlist Operations
+
+Authenticated users must be able to:
+
+Add a ProductVariant to their wishlist.
+View their wishlist.
+Remove a ProductVariant from their wishlist.
+
+The user must only be able to access their own wishlist entries.
+
+12.2.3 Wishlist API
+
+Implement:
+
+POST   /api/v1/wishlist
+GET    /api/v1/wishlist
+DELETE /api/v1/wishlist/{variantId}
+
+All three endpoints are protected.
+
+JWT authentication is required.
+
+12.2.4 Add Wishlist Request
+
+Example:
+
+{
+  "variantId": 25
+}
+
+The backend must obtain the authenticated user from the security context.
+
+Do not accept:
+
+{
+  "userId": 10,
+  "variantId": 25
+}
+
+as the authorization mechanism.
+
+The authenticated JWT determines the owner.
+
+12.2.5 Duplicate Wishlist Entry
+
+If the user already has the ProductVariant in the wishlist:
+
+POST /api/v1/wishlist
+
+must not create a duplicate entry.
+
+Return an appropriate standardized client error using the existing
+exception-handling architecture.
+
+12.2.6 Invalid ProductVariant
+
+If the requested ProductVariant does not exist:
+
+404 RESOURCE_NOT_FOUND
+
+Do not create a wishlist entry.
+
+12.2.7 Wishlist Response
+
+The wishlist response should use DTOs.
+
+Do not expose JPA entities.
+
+A wishlist item should provide enough product information for the frontend
+to display the saved item, such as:
+
+Wishlist entry ID
+ProductVariant ID
+Product ID
+Product name
+Brand
+Model
+Variant name
+Variant attributes
+Added timestamp
+
+Do not retrieve marketplace offers as part of the basic wishlist operation
+unless explicitly required by a later feature.
+
+12.3 Search History
+Objective
+
+Store the searches performed by authenticated users.
+
+Search history is user-specific information.
+
+It is separate from the product catalog and search engine.
+
+12.3.1 Search History Data Model
+
+Create a SearchHistory entity representing:
+
+Search history ID
+User
+Search query
+Search timestamp
+
+Relationship:
+
+User
+ |
+ +-- SearchHistory
+       |
+       +-- query
+       +-- searchedAt
+12.3.2 Search History Ownership
+
+Every search history record must belong to exactly one User.
+
+The authenticated JWT determines the owner.
+
+Never allow the client to specify another user's ID to access or create
+history records.
+
+12.3.3 Search History API
+
+Implement:
+
+POST   /api/v1/search-history
+GET    /api/v1/search-history
+DELETE /api/v1/search-history/{historyId}
+DELETE /api/v1/search-history
+
+All endpoints are protected.
+
+12.3.4 Recording a Search
+
+Example request:
+
+{
+  "query": "iphone 16 pro"
+}
+
+The backend should:
+
+Obtain the authenticated user.
+Validate the query.
+Create a SearchHistory record.
+Associate it with the authenticated user.
+Store the current timestamp.
+
+The search history endpoint is responsible only for recording history.
+
+The product search endpoint remains responsible for searching products.
+
+12.3.5 Search History Validation
+
+Reject:
+
+Null query
+Empty query
+Whitespace-only query
+Excessively long query
+
+Use the existing validation and global exception-handling architecture.
+
+Normalize unnecessary surrounding whitespace before storing the query.
+
+Do not silently invent or modify the user's actual search meaning.
+
+12.3.6 Search History Retrieval
+
+GET /api/v1/search-history must return only the authenticated user's
+history.
+
+Results should be ordered from newest to oldest.
+
+The endpoint must never expose another user's search history.
+
+Pagination may be supported if consistent with the existing API conventions,
+but it is not mandatory for the initial implementation.
+
+12.3.7 Search History Deletion
+Delete one
+DELETE /api/v1/search-history/{historyId}
+
+The authenticated user may delete only their own history entry.
+
+If the history entry does not exist, return:
+
+404 RESOURCE_NOT_FOUND
+
+If the history entry belongs to another user, do not expose it.
+
+Use the project's existing authorization/error-handling conventions.
+
+Delete all
+DELETE /api/v1/search-history
+
+Delete all search history belonging to the authenticated user only.
+
+Do not delete history belonging to other users.
+
+12.4 Security
+
+The following endpoints are protected:
+
+/api/v1/wishlist/**
+/api/v1/search-history/**
+
+The existing JWT authentication mechanism must be reused.
+
+Do not create a second authentication mechanism.
+
+The authenticated principal should be resolved through the existing security
+architecture.
+
+12.5 Layered Architecture
+
+Follow:
+
+Controller
+    |
+    v
+Service
+    |
+    v
+Repository
+    |
+    v
+Database
+
+Create appropriate:
+
+Entities
+Repositories
+DTOs
+Services
+Controllers
+
+Controllers must remain thin.
+
+Business logic belongs in services.
+
+Database access belongs in repositories.
+
+JPA entities must not be returned directly from REST endpoints.
+
+12.6 Error Handling
+
+Use the existing GlobalExceptionHandler.
+
+Expected cases include:
+
+Unauthenticated request
+    → 401 UNAUTHORIZED
+
+
+Invalid ProductVariant
+    → 404 RESOURCE_NOT_FOUND
+
+
+Duplicate wishlist entry
+    → Standardized 400-level response
+
+
+Invalid search query
+    → 400 BAD_REQUEST
+
+
+Missing history entry
+    → 404 RESOURCE_NOT_FOUND
+
+Do not expose database errors, stack traces, or implementation details.
+
+12.7 Data Ownership Rules
+
+The most important security rule in Stage 6 is:
+
+Authenticated User A
+        |
+        +-- can access User A's wishlist
+        +-- can access User A's search history
+
+
+Authenticated User B
+        |
+        +-- can access User B's wishlist
+        +-- can access User B's search history
+
+User A must never be able to retrieve, modify, or delete User B's
+user-specific data by manipulating IDs in the request.
+
+Repository/service queries must enforce ownership.
+
+12.8 Testing
+
+Stage 6 must include tests for:
 
 Wishlist
-
-Users can:
-
-Add a product variant
-View wishlist
-Remove a product variant
-
-Wishlist entries belong to the authenticated user.
-
-Wishlist should reference the product variant rather than a specific
-marketplace offer.
-
+Authenticated user can add a valid ProductVariant.
+Unauthenticated user cannot add a wishlist item.
+Duplicate wishlist entry is rejected safely.
+Invalid ProductVariant returns 404.
+User can retrieve their own wishlist.
+User cannot access another user's wishlist entries.
+User can delete their own wishlist item.
+User cannot delete another user's wishlist item.
+Wishlist response uses DTOs.
+Unique constraint prevents duplicate user + variant entries.
 Search History
+Authenticated user can record a valid search.
+Unauthenticated user cannot record history.
+Empty query is rejected.
+Whitespace-only query is rejected.
+Overly long query is rejected.
+Query whitespace is normalized.
+User retrieves only their own history.
+History is ordered newest first.
+User can delete their own history entry.
+User cannot delete another user's history entry.
+User can delete all of their own history.
+Deleting history does not affect another user.
+Regression
+All Stage 1–5 tests continue to pass.
+Existing authentication functionality remains intact.
+Public product/catalog/comparison/review endpoints remain public.
 
-Users can:
+Use authenticated test principals or JWT-based test authentication
+consistent with the existing test architecture.
 
-Save searches
-View their search history
-Remove history entries where supported by the final API
+12.9 Database Constraints
 
-Search history belongs to the authenticated user.
+The database must enforce the important ownership relationships.
+
+Wishlist:
+
+UNIQUE(user_id, product_variant_id)
+
+Search history:
+
+user_id → users.id
+
+ProductVariant references must use existing foreign-key relationships.
+
+Do not introduce unnecessary denormalized product or platform data.
+
+12.10 Out of Scope
+
+Do NOT implement in Stage 6:
+
+AI recommendations
+Gemini
+Personalized AI summaries
+Price alerts
+Price history
+Review analysis
+Real marketplace integrations
+Frontend wishlist UI
+Frontend search history UI
+Recommendation engine
+
+These will be handled in later stages.
+
+12.11 Completion Criteria
+
+Stage 6 is complete when:
+
+Wishlist entity exists.
+SearchHistory entity exists.
+Proper foreign keys exist.
+Wishlist duplicate constraint exists.
+Wishlist APIs work.
+Search History APIs work.
+JWT authentication is reused.
+User ownership is enforced at service/repository level.
+JPA entities are not exposed through REST.
+Validation works.
+Global exception handling is used.
+All Stage 6 tests pass.
+All Stage 1–5 tests continue to pass.
+Public catalog APIs remain accessible.
+No AI or recommendation functionality is added.
+No frontend changes are required.
+
+After verification, Stage 6 must be committed to Git before beginning
+Stage 7.
 
 13. Stage 7 — AI Integration
 Status
@@ -1577,6 +2021,7 @@ Empty states
 Error states
 Marketplace unavailable states
 AI unavailable states
+
 16. Stage 10 — Full Testing and Integration
 Status
 
@@ -1631,6 +2076,7 @@ Wishlist
 Search history
 Loading states
 Error states
+
 17. Git Workflow
 
 Every completed implementation stage should follow:

@@ -59,6 +59,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/variants/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/api/v1/wishlist/**").authenticated()
+                        .requestMatchers("/api/v1/search-history/**").authenticated()
                         .anyRequest().authenticated());
 
         // Required for H2 Console frame display if H2 is used
