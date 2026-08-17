@@ -26,9 +26,10 @@ import {
     Layers,
     ListAlt,
 } from '@mui/icons-material';
-import { getProductById, getProductVariants } from '../api/catalog';
+import { getProductById, getProductVariants, getVariantComparison } from '../api/catalog';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
+import ComparisonTable from '../components/product/ComparisonTable';
 
 const ProductDetailPage = () => {
     const { productId } = useParams();
@@ -44,6 +45,11 @@ const ProductDetailPage = () => {
     const [selectedVariant, setSelectedVariant] = useState(null);
     const [variantLoading, setVariantLoading] = useState(true);
     const [variantError, setVariantError] = useState(null);
+
+    // Comparison state
+    const [comparisonData, setComparisonData] = useState(null);
+    const [comparisonLoading, setComparisonLoading] = useState(false);
+    const [comparisonError, setComparisonError] = useState(null);
 
     const [imageError, setImageError] = useState(false);
 
@@ -84,9 +90,36 @@ const ProductDetailPage = () => {
         }
     }, [productId]);
 
+    // Fetch comparison data for the selected variant
+    const loadComparisonData = useCallback(async (variantId) => {
+        if (!variantId) return;
+
+        setComparisonLoading(true);
+        setComparisonError(null);
+
+        try {
+            const compData = await getVariantComparison(variantId);
+            setComparisonData(compData);
+        } catch (err) {
+            console.error('Failed to fetch variant comparison:', err);
+            setComparisonError(err?.response?.data?.message || 'Failed to load marketplace comparison data.');
+        } finally {
+            setComparisonLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         loadProductData();
     }, [loadProductData]);
+
+    // Trigger comparison fetch when selected variant changes
+    useEffect(() => {
+        if (selectedVariant?.id) {
+            loadComparisonData(selectedVariant.id);
+        } else {
+            setComparisonData(null);
+        }
+    }, [selectedVariant?.id, loadComparisonData]);
 
     // Handle variant selection
     const handleVariantSelect = (variant) => {
@@ -434,6 +467,22 @@ const ProductDetailPage = () => {
                     </Paper>
                 )}
             </Box>
+
+            {/* Marketplace Comparison Section */}
+            {selectedVariant?.id && (
+                <Box sx={{ mt: 6 }}>
+                    {comparisonLoading ? (
+                        <LoadingState message="Fetching live marketplace comparison..." minHeight="250px" />
+                    ) : comparisonError ? (
+                        <ErrorState
+                            message={comparisonError}
+                            onRetry={() => loadComparisonData(selectedVariant.id)}
+                        />
+                    ) : (
+                        <ComparisonTable comparisonData={comparisonData} />
+                    )}
+                </Box>
+            )}
         </Container>
     );
 };
