@@ -1,0 +1,1061 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.shopsense:shopsense-backend >-------------------
+[INFO] Building shopsense-backend 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ shopsense-backend ---
+[INFO] Deleting D:\E-commerce Comparison Platform\shopsense-ai\backend\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ shopsense-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ shopsense-backend ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 102 source files with javac [debug release 17] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ shopsense-backend ---
+[INFO] skip non existing resourceDirectory D:\E-commerce Comparison Platform\shopsense-ai\backend\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ shopsense-backend ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 19 source files with javac [debug release 17] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ shopsense-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.shopsense.CatalogRepositoryTests
+11:43:36.238 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.shopsense.CatalogRepositoryTests]: CatalogRepositoryTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+11:43:36.596 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.shopsense.ShopSenseApplication for test class com.shopsense.CatalogRepositoryTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-08-17T11:43:37.553+05:30  INFO 47612 --- [shopsense-backend] [           main] com.shopsense.CatalogRepositoryTests     : Starting CatalogRepositoryTests using Java 17.0.6 with PID 47612 (started by Salman in D:\E-commerce Comparison Platform\shopsense-ai\backend)
+2026-08-17T11:43:37.558+05:30  INFO 47612 --- [shopsense-backend] [           main] com.shopsense.CatalogRepositoryTests     : No active profile set, falling back to 1 default profile: "default"
+2026-08-17T11:43:39.162+05:30  INFO 47612 --- [shopsense-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-17T11:43:39.344+05:30  INFO 47612 --- [shopsense-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 165 ms. Found 11 JPA repository interfaces.
+2026-08-17T11:43:39.427+05:30  INFO 47612 --- [shopsense-backend] [           main] beddedDataSourceBeanFactoryPostProcessor : Replacing 'dataSource' DataSource bean with embedded version
+2026-08-17T11:43:39.811+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.j.d.e.EmbeddedDatabaseFactory        : Starting embedded database: url='jdbc:h2:mem:d88ab50c-8928-4ec0-a20d-52be618cd9c7;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-08-17T11:43:40.331+05:30  INFO 47612 --- [shopsense-backend] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-17T11:43:40.556+05:30  INFO 47612 --- [shopsense-backend] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-08-17T11:43:40.615+05:30  INFO 47612 --- [shopsense-backend] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-17T11:43:41.157+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-17T11:43:41.278+05:30  WARN 47612 --- [shopsense-backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-08-17T11:43:42.971+05:30  INFO 47612 --- [shopsense-backend] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    create table categories (
+        id bigint generated by default as identity,
+        created_at timestamp(6) not null,
+        name varchar(100) not null,
+        updated_at timestamp(6),
+        parent_id bigint,
+        primary key (id)
+    )
+Hibernate: 
+    create table platform_offers (
+        id bigint generated by default as identity,
+        availability_details varchar(500),
+        availability_status varchar(30) not null,
+        currency varchar(10) not null,
+        current_price numeric(12,2) not null,
+        delivery_info varchar(500),
+        last_updated_at timestamp(6) not null,
+        offer_details TEXT,
+        original_price numeric(12,2),
+        product_url varchar(1000) not null,
+        seller_name varchar(255),
+        seller_rating numeric(3,2),
+        platform_id bigint not null,
+        product_variant_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table platforms (
+        id bigint generated by default as identity,
+        created_at timestamp(6) not null,
+        is_active boolean not null,
+        logo_url varchar(500),
+        name varchar(100) not null,
+        updated_at timestamp(6),
+        website_url varchar(500),
+        primary key (id)
+    )
+Hibernate: 
+    create table product_specifications (
+        id bigint generated by default as identity,
+        attribute_name varchar(100) not null,
+        attribute_value varchar(500) not null,
+        created_at timestamp(6) not null,
+        display_order integer not null,
+        updated_at timestamp(6),
+        product_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table product_variants (
+        id bigint generated by default as identity,
+        created_at timestamp(6) not null,
+        is_default boolean not null,
+        updated_at timestamp(6),
+        variant_name varchar(255) not null,
+        product_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table products (
+        id bigint generated by default as identity,
+        brand varchar(100) not null,
+        created_at timestamp(6) not null,
+        description TEXT,
+        has_variants boolean not null,
+        image_url varchar(500),
+        model varchar(150) not null,
+        series varchar(150),
+        updated_at timestamp(6),
+        category_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table reviews (
+        id bigint generated by default as identity,
+        fetched_at timestamp(6) not null,
+        rating numeric(3,2),
+        review_date date,
+        review_text TEXT not null,
+        review_title varchar(255),
+        reviewer_name varchar(100),
+        source_url varchar(1000),
+        verified_purchase boolean,
+        platform_id bigint not null,
+        product_variant_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table search_history (
+        id bigint generated by default as identity,
+        search_query varchar(500) not null,
+        searched_at timestamp(6) not null,
+        user_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table users (
+        id bigint generated by default as identity,
+        country varchar(100),
+        created_at timestamp(6) not null,
+        email varchar(150) not null,
+        name varchar(100) not null,
+        password varchar(255) not null,
+        region varchar(100),
+        role varchar(20) not null,
+        updated_at timestamp(6),
+        primary key (id)
+    )
+Hibernate: 
+    create table variant_attributes (
+        id bigint generated by default as identity,
+        attribute_name varchar(100) not null,
+        attribute_value varchar(255) not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        variant_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table wishlist (
+        id bigint generated by default as identity,
+        created_at timestamp(6) not null,
+        product_variant_id bigint not null,
+        user_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    alter table if exists platform_offers 
+       drop constraint if exists uk_variant_platform
+Hibernate: 
+    alter table if exists platform_offers 
+       add constraint uk_variant_platform unique (product_variant_id, platform_id)
+Hibernate: 
+    alter table if exists users 
+       drop constraint if exists UK_6dotkott2kjsp8vw4d0m25fb7
+Hibernate: 
+    alter table if exists users 
+       add constraint UK_6dotkott2kjsp8vw4d0m25fb7 unique (email)
+Hibernate: 
+    alter table if exists variant_attributes 
+       drop constraint if exists uk_variant_attribute_name
+Hibernate: 
+    alter table if exists variant_attributes 
+       add constraint uk_variant_attribute_name unique (variant_id, attribute_name)
+Hibernate: 
+    alter table if exists wishlist 
+       drop constraint if exists uk_wishlist_user_variant
+Hibernate: 
+    alter table if exists wishlist 
+       add constraint uk_wishlist_user_variant unique (user_id, product_variant_id)
+Hibernate: 
+    alter table if exists categories 
+       add constraint FKsaok720gsu4u2wrgbk10b5n8d 
+       foreign key (parent_id) 
+       references categories
+Hibernate: 
+    alter table if exists platform_offers 
+       add constraint FK3evdcxm22lobihmmex400qw33 
+       foreign key (platform_id) 
+       references platforms
+Hibernate: 
+    alter table if exists platform_offers 
+       add constraint FKfom5nhkmfue8dvqu6l8twfyt 
+       foreign key (product_variant_id) 
+       references product_variants
+Hibernate: 
+    alter table if exists product_specifications 
+       add constraint FKbets5sov4bn9d2wy8vqathw6d 
+       foreign key (product_id) 
+       references products
+Hibernate: 
+    alter table if exists product_variants 
+       add constraint FKosqitn4s405cynmhb87lkvuau 
+       foreign key (product_id) 
+       references products
+Hibernate: 
+    alter table if exists products 
+       add constraint FKog2rp4qthbtt2lfyhfo32lsw9 
+       foreign key (category_id) 
+       references categories
+Hibernate: 
+    alter table if exists reviews 
+       add constraint FKamwajpfmlrn2pi61n3gnhsx88 
+       foreign key (platform_id) 
+       references platforms
+Hibernate: 
+    alter table if exists reviews 
+       add constraint FKr72rupsehqvf19eh1kw0u9rq 
+       foreign key (product_variant_id) 
+       references product_variants
+Hibernate: 
+    alter table if exists search_history 
+       add constraint FK8ll2cxj6i83mnrcyxrxl4b7dm 
+       foreign key (user_id) 
+       references users
+Hibernate: 
+    alter table if exists variant_attributes 
+       add constraint FK2qhhwbaayc02iwvry31k5w8tx 
+       foreign key (variant_id) 
+       references product_variants
+Hibernate: 
+    alter table if exists wishlist 
+       add constraint FKie6kq1l2l4xfij290u3ce4wx3 
+       foreign key (product_variant_id) 
+       references product_variants
+Hibernate: 
+    alter table if exists wishlist 
+       add constraint FKtrd6335blsefl2gxpb8lr0gr7 
+       foreign key (user_id) 
+       references users
+2026-08-17T11:43:43.109+05:30  INFO 47612 --- [shopsense-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-17T11:43:44.377+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-17T11:43:45.696+05:30  INFO 47612 --- [shopsense-backend] [           main] com.shopsense.CatalogRepositoryTests     : Started CatalogRepositoryTests in 8.871 seconds (process running for 11.863)
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+Hibernate: 
+    insert 
+    into
+        categories
+        (created_at, name, parent_id, updated_at, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        products
+        (brand, category_id, created_at, description, has_variants, image_url, model, series, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        product_specifications
+        (attribute_name, attribute_value, created_at, display_order, product_id, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        product_variants
+        (created_at, is_default, product_id, updated_at, variant_name, id) 
+    values
+        (?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        variant_attributes
+        (attribute_name, attribute_value, created_at, updated_at, variant_id, id) 
+    values
+        (?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        platforms
+        (created_at, is_active, logo_url, name, updated_at, website_url, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        platform_offers
+        (availability_details, availability_status, currency, current_price, delivery_info, last_updated_at, offer_details, original_price, platform_id, product_url, product_variant_id, seller_name, seller_rating, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        po1_0.id,
+        po1_0.availability_details,
+        po1_0.availability_status,
+        po1_0.currency,
+        po1_0.current_price,
+        po1_0.delivery_info,
+        po1_0.last_updated_at,
+        po1_0.offer_details,
+        po1_0.original_price,
+        po1_0.platform_id,
+        po1_0.product_url,
+        po1_0.product_variant_id,
+        po1_0.seller_name,
+        po1_0.seller_rating 
+    from
+        platform_offers po1_0 
+    left join
+        product_variants pv1_0 
+            on pv1_0.id=po1_0.product_variant_id 
+    left join
+        platforms p1_0 
+            on p1_0.id=po1_0.platform_id 
+    where
+        pv1_0.id=? 
+        and p1_0.id=?
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.03 s -- in com.shopsense.CatalogRepositoryTests
+[INFO] Running com.shopsense.client.gemini.GeminiClientTest
+2026-08-17T11:43:46.743+05:30  WARN 47612 --- [shopsense-backend] [           main] c.s.client.gemini.GeminiClientImpl       : Gemini API key is not configured or using mock key. Returning simulated response.
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.shopsense.client.gemini.GeminiClientTest
+[INFO] Running com.shopsense.connector.ConnectorManagerTest
+2026-08-17T11:43:46.808+05:30  WARN 47612 --- [shopsense-backend] [           main] c.shopsense.connector.ConnectorManager   : Connector execution failed for platform Croma: Unexpected Croma API timeout
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.055 s -- in com.shopsense.connector.ConnectorManagerTest
+[INFO] Running com.shopsense.connector.MockConnectorsTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.020 s -- in com.shopsense.connector.MockConnectorsTest
+[INFO] Running com.shopsense.controller.AIAnalysisControllerTest
+2026-08-17T11:43:46.859+05:30  INFO 47612 --- [shopsense-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.shopsense.controller.AIAnalysisControllerTest]: AIAnalysisControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-17T11:43:46.934+05:30  INFO 47612 --- [shopsense-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.shopsense.ShopSenseApplication for test class com.shopsense.controller.AIAnalysisControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-08-17T11:43:47.000+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.AIAnalysisControllerTest  : Starting AIAnalysisControllerTest using Java 17.0.6 with PID 47612 (started by Salman in D:\E-commerce Comparison Platform\shopsense-ai\backend)
+2026-08-17T11:43:47.002+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.AIAnalysisControllerTest  : No active profile set, falling back to 1 default profile: "default"
+2026-08-17T11:43:50.588+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@122c8b64, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@606b9417, org.springframework.security.web.context.SecurityContextHolderFilter@78483404, org.springframework.security.web.header.HeaderWriterFilter@40340243, org.springframework.web.filter.CorsFilter@10743711, org.springframework.security.web.csrf.CsrfFilter@4b3ebc09, org.springframework.security.web.authentication.logout.LogoutFilter@17d745ae, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@63cb1a9a, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@2d67f090, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@6c31b410, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@5875480e, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@3ea5f324, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5b9b7370, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@1ab07559, org.springframework.security.web.access.ExceptionTranslationFilter@456454e0, org.springframework.security.web.access.intercept.AuthorizationFilter@694b818f]
+2026-08-17T11:43:50.685+05:30  WARN 47612 --- [shopsense-backend] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 25b192a4-4ef9-4f50-ad0c-ca87161a8149
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-08-17T11:43:50.799+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-08-17T11:43:50.800+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-08-17T11:43:50.804+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 4 ms
+2026-08-17T11:43:50.853+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.AIAnalysisControllerTest  : Started AIAnalysisControllerTest in 3.901 seconds (process running for 17.021)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.687 s -- in com.shopsense.controller.AIAnalysisControllerTest
+[INFO] Running com.shopsense.controller.ComparisonControllerTest
+2026-08-17T11:43:51.556+05:30  INFO 47612 --- [shopsense-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.shopsense.controller.ComparisonControllerTest]: ComparisonControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-17T11:43:51.593+05:30  INFO 47612 --- [shopsense-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.shopsense.ShopSenseApplication for test class com.shopsense.controller.ComparisonControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-08-17T11:43:51.707+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.ComparisonControllerTest  : Starting ComparisonControllerTest using Java 17.0.6 with PID 47612 (started by Salman in D:\E-commerce Comparison Platform\shopsense-ai\backend)
+2026-08-17T11:43:51.708+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.ComparisonControllerTest  : No active profile set, falling back to 1 default profile: "default"
+2026-08-17T11:43:52.962+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@632e3100, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@65ea0bcd, org.springframework.security.web.context.SecurityContextHolderFilter@40009de0, org.springframework.security.web.header.HeaderWriterFilter@2232c745, org.springframework.web.filter.CorsFilter@30a0c356, org.springframework.security.web.csrf.CsrfFilter@7ef32321, org.springframework.security.web.authentication.logout.LogoutFilter@71faec05, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@7484236d, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@78363803, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@2190e7fd, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@52b8633c, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@270d54ea, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@4c0ac628, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@332464fe, org.springframework.security.web.access.ExceptionTranslationFilter@3e7aa2c9, org.springframework.security.web.access.intercept.AuthorizationFilter@22e494dc]
+2026-08-17T11:43:52.987+05:30  WARN 47612 --- [shopsense-backend] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 9dbfd0f6-9ebc-4293-b41c-e7b053b882ca
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-08-17T11:43:53.002+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-08-17T11:43:53.002+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-08-17T11:43:53.004+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-08-17T11:43:53.030+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.ComparisonControllerTest  : Started ComparisonControllerTest in 1.416 seconds (process running for 19.197)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.598 s -- in com.shopsense.controller.ComparisonControllerTest
+[INFO] Running com.shopsense.controller.ProductControllerTest
+2026-08-17T11:43:53.168+05:30  INFO 47612 --- [shopsense-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.shopsense.controller.ProductControllerTest]: ProductControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-17T11:43:53.200+05:30  INFO 47612 --- [shopsense-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.shopsense.ShopSenseApplication for test class com.shopsense.controller.ProductControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-08-17T11:43:53.287+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.ProductControllerTest     : Starting ProductControllerTest using Java 17.0.6 with PID 47612 (started by Salman in D:\E-commerce Comparison Platform\shopsense-ai\backend)
+2026-08-17T11:43:53.289+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.ProductControllerTest     : No active profile set, falling back to 1 default profile: "default"
+2026-08-17T11:43:54.766+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@40bb73ff, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@6fc3c9d6, org.springframework.security.web.context.SecurityContextHolderFilter@2479a21f, org.springframework.security.web.header.HeaderWriterFilter@5fc27e3f, org.springframework.web.filter.CorsFilter@5b5954bd, org.springframework.security.web.csrf.CsrfFilter@1914bfa1, org.springframework.security.web.authentication.logout.LogoutFilter@77f3ac1e, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@6e1b56ad, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@61642225, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@4b0a781e, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@4e2842c, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@18acf886, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@2d1b923f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5035ce0b, org.springframework.security.web.access.ExceptionTranslationFilter@7318d347, org.springframework.security.web.access.intercept.AuthorizationFilter@46bd2d4b]
+2026-08-17T11:43:54.794+05:30  WARN 47612 --- [shopsense-backend] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: c76b8830-6201-42e0-bc21-1df6c1fb58ad
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-08-17T11:43:54.805+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-08-17T11:43:54.806+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-08-17T11:43:54.807+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-08-17T11:43:54.824+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.ProductControllerTest     : Started ProductControllerTest in 1.617 seconds (process running for 20.991)
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.834 s -- in com.shopsense.controller.ProductControllerTest
+[INFO] Running com.shopsense.controller.ReviewControllerTest
+2026-08-17T11:43:55.003+05:30  INFO 47612 --- [shopsense-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.shopsense.controller.ReviewControllerTest]: ReviewControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-17T11:43:55.028+05:30  INFO 47612 --- [shopsense-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.shopsense.ShopSenseApplication for test class com.shopsense.controller.ReviewControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-08-17T11:43:55.091+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.ReviewControllerTest      : Starting ReviewControllerTest using Java 17.0.6 with PID 47612 (started by Salman in D:\E-commerce Comparison Platform\shopsense-ai\backend)
+2026-08-17T11:43:55.091+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.ReviewControllerTest      : No active profile set, falling back to 1 default profile: "default"
+2026-08-17T11:43:56.160+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@169f1c39, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@5f9479, org.springframework.security.web.context.SecurityContextHolderFilter@5554cc4, org.springframework.security.web.header.HeaderWriterFilter@bf90cf8, org.springframework.web.filter.CorsFilter@213dd15d, org.springframework.security.web.csrf.CsrfFilter@350e34e7, org.springframework.security.web.authentication.logout.LogoutFilter@3ac5bce4, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@13365eb9, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@132bc3fb, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@3a309907, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@483e2a7, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@41b8e985, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@50769bc1, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@542024ac, org.springframework.security.web.access.ExceptionTranslationFilter@197115d6, org.springframework.security.web.access.intercept.AuthorizationFilter@1370b4df]
+2026-08-17T11:43:56.174+05:30  WARN 47612 --- [shopsense-backend] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 9af70700-0f75-4c7e-96fd-7455d1bcffa1
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-08-17T11:43:56.181+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-08-17T11:43:56.182+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-08-17T11:43:56.183+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-08-17T11:43:56.195+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.ReviewControllerTest      : Started ReviewControllerTest in 1.16 seconds (process running for 22.361)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.284 s -- in com.shopsense.controller.ReviewControllerTest
+[INFO] Running com.shopsense.controller.SearchHistoryControllerTest
+2026-08-17T11:43:56.295+05:30  INFO 47612 --- [shopsense-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.shopsense.controller.SearchHistoryControllerTest]: SearchHistoryControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-17T11:43:56.315+05:30  INFO 47612 --- [shopsense-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.shopsense.ShopSenseApplication for test class com.shopsense.controller.SearchHistoryControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-08-17T11:43:56.358+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.c.SearchHistoryControllerTest        : Starting SearchHistoryControllerTest using Java 17.0.6 with PID 47612 (started by Salman in D:\E-commerce Comparison Platform\shopsense-ai\backend)
+2026-08-17T11:43:56.361+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.c.SearchHistoryControllerTest        : No active profile set, falling back to 1 default profile: "default"
+2026-08-17T11:43:57.114+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@28685f4f, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@5677182f, org.springframework.security.web.context.SecurityContextHolderFilter@7c397b0c, org.springframework.security.web.header.HeaderWriterFilter@765f934e, org.springframework.web.filter.CorsFilter@2bd00fce, org.springframework.security.web.csrf.CsrfFilter@3e6b1a0d, org.springframework.security.web.authentication.logout.LogoutFilter@778324fd, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@75610768, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@7fe1dee9, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@6b34e798, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@1bab71f5, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@1ae4bdf4, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@752ee6e1, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@14c5f96, org.springframework.security.web.access.ExceptionTranslationFilter@9ccdd34, org.springframework.security.web.access.intercept.AuthorizationFilter@4ff43de]
+2026-08-17T11:43:57.123+05:30  WARN 47612 --- [shopsense-backend] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: cf281eab-26bb-4511-ad1a-67296cea217f
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-08-17T11:43:57.134+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-08-17T11:43:57.134+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-08-17T11:43:57.138+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 4 ms
+2026-08-17T11:43:57.152+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.c.SearchHistoryControllerTest        : Started SearchHistoryControllerTest in 0.831 seconds (process running for 23.319)
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.227 s -- in com.shopsense.controller.SearchHistoryControllerTest
+[INFO] Running com.shopsense.controller.WishlistControllerTest
+2026-08-17T11:43:57.528+05:30  INFO 47612 --- [shopsense-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.shopsense.controller.WishlistControllerTest]: WishlistControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-17T11:43:57.541+05:30  INFO 47612 --- [shopsense-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.shopsense.ShopSenseApplication for test class com.shopsense.controller.WishlistControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-08-17T11:43:57.582+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.WishlistControllerTest    : Starting WishlistControllerTest using Java 17.0.6 with PID 47612 (started by Salman in D:\E-commerce Comparison Platform\shopsense-ai\backend)
+2026-08-17T11:43:57.582+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.WishlistControllerTest    : No active profile set, falling back to 1 default profile: "default"
+2026-08-17T11:43:58.506+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@70bba4d1, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@2cb8287, org.springframework.security.web.context.SecurityContextHolderFilter@aa09e8d, org.springframework.security.web.header.HeaderWriterFilter@4ae8bf28, org.springframework.web.filter.CorsFilter@798828e9, org.springframework.security.web.csrf.CsrfFilter@f9a4e75, org.springframework.security.web.authentication.logout.LogoutFilter@1f2fc50, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@32693a25, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@7c4d896a, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@273b3afc, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@246f4044, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@5714804a, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@73d379c7, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@a0b8fe6, org.springframework.security.web.access.ExceptionTranslationFilter@2720786f, org.springframework.security.web.access.intercept.AuthorizationFilter@7991726b]
+2026-08-17T11:43:58.516+05:30  WARN 47612 --- [shopsense-backend] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: a24b03e9-54e3-4a7c-bcbe-ea949f9c80b9
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-08-17T11:43:58.523+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-08-17T11:43:58.523+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-08-17T11:43:58.526+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 3 ms
+2026-08-17T11:43:58.545+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.controller.WishlistControllerTest    : Started WishlistControllerTest in 0.997 seconds (process running for 24.711)
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.213 s -- in com.shopsense.controller.WishlistControllerTest
+[INFO] Running com.shopsense.scheduler.ReviewRefreshSchedulerTest
+2026-08-17T11:43:59.065+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.scheduler.ReviewRefreshScheduler     : Starting background review refresh scheduler...
+2026-08-17T11:43:59.066+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.scheduler.ReviewRefreshScheduler     : No product variants found to refresh reviews.
+2026-08-17T11:43:59.091+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.scheduler.ReviewRefreshScheduler     : Starting background review refresh scheduler...
+2026-08-17T11:43:59.092+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.scheduler.ReviewRefreshScheduler     : Background review refresh scheduler completed. Successfully refreshed: 2, Failures: 0
+2026-08-17T11:43:59.108+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.scheduler.ReviewRefreshScheduler     : Starting background review refresh scheduler...
+2026-08-17T11:43:59.109+05:30 ERROR 47612 --- [shopsense-backend] [           main] c.s.scheduler.ReviewRefreshScheduler     : Background review refresh failed for variant ID 1001: Marketplace connection timeout. Continuing with remaining variants.
+2026-08-17T11:43:59.109+05:30  INFO 47612 --- [shopsense-backend] [           main] c.s.scheduler.ReviewRefreshScheduler     : Background review refresh scheduler completed. Successfully refreshed: 1, Failures: 1
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.366 s -- in com.shopsense.scheduler.ReviewRefreshSchedulerTest
+[INFO] Running com.shopsense.service.ai.AIServiceTest
+2026-08-17T11:44:00.431+05:30  WARN 47612 --- [shopsense-backend] [           main] c.shopsense.service.ai.GeminiAIService   : Failed to parse Gemini response as JSON. Falling back to default unavailable response structure. Cause: Unrecognized token 'This': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')
+ at [Source: (String)"This is malformed non-JSON output from Gemini API"; line: 1, column: 5]
+2026-08-17T11:44:00.473+05:30 ERROR 47612 --- [shopsense-backend] [           main] c.shopsense.service.ai.GeminiAIService   : AI Analysis failed for variant id: 1002. Returning safe fallback. Cause: Gemini service connection error
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.416 s -- in com.shopsense.service.ai.AIServiceTest
+[INFO] Running com.shopsense.service.ComparisonServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.379 s -- in com.shopsense.service.ComparisonServiceTest
+[INFO] Running com.shopsense.service.ProductServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.191 s -- in com.shopsense.service.ProductServiceTest
+[INFO] Running com.shopsense.service.ReviewServiceTest
+2026-08-17T11:44:01.267+05:30  INFO 47612 --- [shopsense-backend] [           main] c.shopsense.service.ReviewServiceImpl    : Successfully refreshed 5 reviews for platform Amazon and variant 1002
+2026-08-17T11:44:01.281+05:30  WARN 47612 --- [shopsense-backend] [           main] c.shopsense.service.ReviewServiceImpl    : Marketplace review refresh failed for platform Amazon and variant 1002: Amazon review endpoint network failure. Preserving existing reviews.
+2026-08-17T11:44:01.291+05:30  INFO 47612 --- [shopsense-backend] [           main] c.shopsense.service.ReviewServiceImpl    : Successfully refreshed 15 reviews for platform Amazon and variant 1002
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.186 s -- in com.shopsense.service.ReviewServiceTest
+[INFO] Running com.shopsense.service.SearchHistoryServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.232 s -- in com.shopsense.service.SearchHistoryServiceTest
+[INFO] Running com.shopsense.service.WishlistServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.134 s -- in com.shopsense.service.WishlistServiceTest
+[INFO] Running com.shopsense.ShopSenseApplicationTests
+2026-08-17T11:44:01.692+05:30  INFO 47612 --- [shopsense-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.shopsense.ShopSenseApplicationTests]: ShopSenseApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-17T11:44:01.698+05:30  INFO 47612 --- [shopsense-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.shopsense.ShopSenseApplication for test class com.shopsense.ShopSenseApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-08-17T11:44:01.746+05:30  INFO 47612 --- [shopsense-backend] [           main] c.shopsense.ShopSenseApplicationTests    : Starting ShopSenseApplicationTests using Java 17.0.6 with PID 47612 (started by Salman in D:\E-commerce Comparison Platform\shopsense-ai\backend)
+2026-08-17T11:44:01.746+05:30  INFO 47612 --- [shopsense-backend] [           main] c.shopsense.ShopSenseApplicationTests    : No active profile set, falling back to 1 default profile: "default"
+2026-08-17T11:44:02.902+05:30  INFO 47612 --- [shopsense-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-17T11:44:02.987+05:30  INFO 47612 --- [shopsense-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 83 ms. Found 11 JPA repository interfaces.
+2026-08-17T11:44:03.677+05:30  INFO 47612 --- [shopsense-backend] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-17T11:44:03.687+05:30  INFO 47612 --- [shopsense-backend] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-17T11:44:03.702+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-17T11:44:03.707+05:30  INFO 47612 --- [shopsense-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-17T11:44:03.774+05:30  INFO 47612 --- [shopsense-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn4: url=jdbc:h2:mem:shopsense_db user=SA
+2026-08-17T11:44:03.783+05:30  INFO 47612 --- [shopsense-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-17T11:44:03.799+05:30  WARN 47612 --- [shopsense-backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-08-17T11:44:04.459+05:30  INFO 47612 --- [shopsense-backend] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    create table categories (
+        id bigint generated by default as identity,
+        created_at timestamp(6) not null,
+        name varchar(100) not null,
+        updated_at timestamp(6),
+        parent_id bigint,
+        primary key (id)
+    )
+Hibernate: 
+    create table platform_offers (
+        id bigint generated by default as identity,
+        availability_details varchar(500),
+        availability_status varchar(30) not null,
+        currency varchar(10) not null,
+        current_price numeric(12,2) not null,
+        delivery_info varchar(500),
+        last_updated_at timestamp(6) not null,
+        offer_details TEXT,
+        original_price numeric(12,2),
+        product_url varchar(1000) not null,
+        seller_name varchar(255),
+        seller_rating numeric(3,2),
+        platform_id bigint not null,
+        product_variant_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table platforms (
+        id bigint generated by default as identity,
+        created_at timestamp(6) not null,
+        is_active boolean not null,
+        logo_url varchar(500),
+        name varchar(100) not null,
+        updated_at timestamp(6),
+        website_url varchar(500),
+        primary key (id)
+    )
+Hibernate: 
+    create table product_specifications (
+        id bigint generated by default as identity,
+        attribute_name varchar(100) not null,
+        attribute_value varchar(500) not null,
+        created_at timestamp(6) not null,
+        display_order integer not null,
+        updated_at timestamp(6),
+        product_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table product_variants (
+        id bigint generated by default as identity,
+        created_at timestamp(6) not null,
+        is_default boolean not null,
+        updated_at timestamp(6),
+        variant_name varchar(255) not null,
+        product_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table products (
+        id bigint generated by default as identity,
+        brand varchar(100) not null,
+        created_at timestamp(6) not null,
+        description TEXT,
+        has_variants boolean not null,
+        image_url varchar(500),
+        model varchar(150) not null,
+        series varchar(150),
+        updated_at timestamp(6),
+        category_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table reviews (
+        id bigint generated by default as identity,
+        fetched_at timestamp(6) not null,
+        rating numeric(3,2),
+        review_date date,
+        review_text TEXT not null,
+        review_title varchar(255),
+        reviewer_name varchar(100),
+        source_url varchar(1000),
+        verified_purchase boolean,
+        platform_id bigint not null,
+        product_variant_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table search_history (
+        id bigint generated by default as identity,
+        search_query varchar(500) not null,
+        searched_at timestamp(6) not null,
+        user_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table users (
+        id bigint generated by default as identity,
+        country varchar(100),
+        created_at timestamp(6) not null,
+        email varchar(150) not null,
+        name varchar(100) not null,
+        password varchar(255) not null,
+        region varchar(100),
+        role varchar(20) not null,
+        updated_at timestamp(6),
+        primary key (id)
+    )
+Hibernate: 
+    create table variant_attributes (
+        id bigint generated by default as identity,
+        attribute_name varchar(100) not null,
+        attribute_value varchar(255) not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        variant_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table wishlist (
+        id bigint generated by default as identity,
+        created_at timestamp(6) not null,
+        product_variant_id bigint not null,
+        user_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    alter table if exists platform_offers 
+       drop constraint if exists uk_variant_platform
+Hibernate: 
+    alter table if exists platform_offers 
+       add constraint uk_variant_platform unique (product_variant_id, platform_id)
+Hibernate: 
+    alter table if exists users 
+       drop constraint if exists UK_6dotkott2kjsp8vw4d0m25fb7
+Hibernate: 
+    alter table if exists users 
+       add constraint UK_6dotkott2kjsp8vw4d0m25fb7 unique (email)
+Hibernate: 
+    alter table if exists variant_attributes 
+       drop constraint if exists uk_variant_attribute_name
+Hibernate: 
+    alter table if exists variant_attributes 
+       add constraint uk_variant_attribute_name unique (variant_id, attribute_name)
+Hibernate: 
+    alter table if exists wishlist 
+       drop constraint if exists uk_wishlist_user_variant
+Hibernate: 
+    alter table if exists wishlist 
+       add constraint uk_wishlist_user_variant unique (user_id, product_variant_id)
+Hibernate: 
+    alter table if exists categories 
+       add constraint FKsaok720gsu4u2wrgbk10b5n8d 
+       foreign key (parent_id) 
+       references categories
+Hibernate: 
+    alter table if exists platform_offers 
+       add constraint FK3evdcxm22lobihmmex400qw33 
+       foreign key (platform_id) 
+       references platforms
+Hibernate: 
+    alter table if exists platform_offers 
+       add constraint FKfom5nhkmfue8dvqu6l8twfyt 
+       foreign key (product_variant_id) 
+       references product_variants
+Hibernate: 
+    alter table if exists product_specifications 
+       add constraint FKbets5sov4bn9d2wy8vqathw6d 
+       foreign key (product_id) 
+       references products
+Hibernate: 
+    alter table if exists product_variants 
+       add constraint FKosqitn4s405cynmhb87lkvuau 
+       foreign key (product_id) 
+       references products
+Hibernate: 
+    alter table if exists products 
+       add constraint FKog2rp4qthbtt2lfyhfo32lsw9 
+       foreign key (category_id) 
+       references categories
+Hibernate: 
+    alter table if exists reviews 
+       add constraint FKamwajpfmlrn2pi61n3gnhsx88 
+       foreign key (platform_id) 
+       references platforms
+Hibernate: 
+    alter table if exists reviews 
+       add constraint FKr72rupsehqvf19eh1kw0u9rq 
+       foreign key (product_variant_id) 
+       references product_variants
+Hibernate: 
+    alter table if exists search_history 
+       add constraint FK8ll2cxj6i83mnrcyxrxl4b7dm 
+       foreign key (user_id) 
+       references users
+Hibernate: 
+    alter table if exists variant_attributes 
+       add constraint FK2qhhwbaayc02iwvry31k5w8tx 
+       foreign key (variant_id) 
+       references product_variants
+Hibernate: 
+    alter table if exists wishlist 
+       add constraint FKie6kq1l2l4xfij290u3ce4wx3 
+       foreign key (product_variant_id) 
+       references product_variants
+Hibernate: 
+    alter table if exists wishlist 
+       add constraint FKtrd6335blsefl2gxpb8lr0gr7 
+       foreign key (user_id) 
+       references users
+2026-08-17T11:44:04.561+05:30  INFO 47612 --- [shopsense-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-17T11:44:06.804+05:30  WARN 47612 --- [shopsense-backend] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-17T11:44:07.237+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@2e5dd896, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@5eb22616, org.springframework.security.web.context.SecurityContextHolderFilter@3a27ad97, org.springframework.security.web.header.HeaderWriterFilter@6fb4ea51, org.springframework.web.filter.CorsFilter@3f8bc992, org.springframework.security.web.authentication.logout.LogoutFilter@4fe8c3f, com.shopsense.security.JwtAuthenticationFilter@589d106c, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@72893ee0, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@4919a94a, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@67360a68, org.springframework.security.web.session.SessionManagementFilter@ab80b31, org.springframework.security.web.access.ExceptionTranslationFilter@522c4079, org.springframework.security.web.access.intercept.AuthorizationFilter@3b6c712a]
+2026-08-17T11:44:08.118+05:30  INFO 47612 --- [shopsense-backend] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:shopsense_db'
+2026-08-17T11:44:08.341+05:30  INFO 47612 --- [shopsense-backend] [           main] c.shopsense.ShopSenseApplicationTests    : Started ShopSenseApplicationTests in 6.626 seconds (process running for 34.509)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.687 s -- in com.shopsense.ShopSenseApplicationTests
+[INFO] Running com.shopsense.UserFeaturesRepositoryTest
+2026-08-17T11:44:08.395+05:30  INFO 47612 --- [shopsense-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.shopsense.UserFeaturesRepositoryTest]: UserFeaturesRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-08-17T11:44:08.423+05:30  INFO 47612 --- [shopsense-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.shopsense.ShopSenseApplication for test class com.shopsense.UserFeaturesRepositoryTest
+Hibernate: 
+    insert 
+    into
+        users
+        (country, created_at, email, name, password, region, role, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        search_history
+        (search_query, searched_at, user_id, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        search_history
+        (search_query, searched_at, user_id, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    select
+        sh1_0.id,
+        sh1_0.search_query,
+        sh1_0.searched_at,
+        sh1_0.user_id 
+    from
+        search_history sh1_0 
+    left join
+        users u1_0 
+            on u1_0.id=sh1_0.user_id 
+    where
+        u1_0.id=? 
+    order by
+        sh1_0.searched_at desc
+Hibernate: 
+    select
+        sh1_0.id,
+        sh1_0.search_query,
+        sh1_0.searched_at,
+        sh1_0.user_id 
+    from
+        search_history sh1_0 
+    left join
+        users u1_0 
+            on u1_0.id=sh1_0.user_id 
+    where
+        sh1_0.id=? 
+        and u1_0.id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (country, created_at, email, name, password, region, role, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        sh1_0.id,
+        sh1_0.search_query,
+        sh1_0.searched_at,
+        sh1_0.user_id 
+    from
+        search_history sh1_0 
+    left join
+        users u1_0 
+            on u1_0.id=sh1_0.user_id 
+    where
+        sh1_0.id=? 
+        and u1_0.id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (country, created_at, email, name, password, region, role, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        categories
+        (created_at, name, parent_id, updated_at, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        products
+        (brand, category_id, created_at, description, has_variants, image_url, model, series, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        product_variants
+        (created_at, is_default, product_id, updated_at, variant_name, id) 
+    values
+        (?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        wishlist
+        (created_at, product_variant_id, user_id, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    select
+        w1_0.id 
+    from
+        wishlist w1_0 
+    left join
+        users u1_0 
+            on u1_0.id=w1_0.user_id 
+    left join
+        product_variants pv1_0 
+            on pv1_0.id=w1_0.product_variant_id 
+    where
+        u1_0.id=? 
+        and pv1_0.id=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        w1_0.id,
+        w1_0.created_at,
+        w1_0.product_variant_id,
+        w1_0.user_id 
+    from
+        wishlist w1_0 
+    left join
+        users u1_0 
+            on u1_0.id=w1_0.user_id 
+    where
+        u1_0.id=? 
+    order by
+        w1_0.created_at desc
+Hibernate: 
+    insert 
+    into
+        wishlist
+        (created_at, product_variant_id, user_id, id) 
+    values
+        (?, ?, ?, default)
+2026-08-17T11:44:08.591+05:30  WARN 47612 --- [shopsense-backend] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 23505, SQLState: 23505
+2026-08-17T11:44:08.591+05:30 ERROR 47612 --- [shopsense-backend] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : Unique index or primary key violation: "PUBLIC.UK_WISHLIST_USER_VARIANT_INDEX_F ON PUBLIC.WISHLIST(USER_ID NULLS FIRST, PRODUCT_VARIANT_ID NULLS FIRST) VALUES ( /* key:1 */ CAST(3 AS BIGINT), CAST(2 AS BIGINT))"; SQL statement:
+insert into wishlist (created_at,product_variant_id,user_id,id) values (?,?,?,default) [23505-224]
+Hibernate: 
+    insert 
+    into
+        users
+        (country, created_at, email, name, password, region, role, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        users
+        (country, created_at, email, name, password, region, role, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        search_history
+        (search_query, searched_at, user_id, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        search_history
+        (search_query, searched_at, user_id, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        search_history
+        (search_query, searched_at, user_id, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    select
+        sh1_0.id,
+        sh1_0.search_query,
+        sh1_0.searched_at,
+        sh1_0.user_id 
+    from
+        search_history sh1_0 
+    left join
+        users u1_0 
+            on u1_0.id=sh1_0.user_id 
+    where
+        u1_0.id=? 
+    order by
+        sh1_0.searched_at desc
+Hibernate: 
+    select
+        sh1_0.id,
+        sh1_0.search_query,
+        sh1_0.searched_at,
+        sh1_0.user_id 
+    from
+        search_history sh1_0 
+    left join
+        users u1_0 
+            on u1_0.id=sh1_0.user_id 
+    where
+        u1_0.id=? 
+    order by
+        sh1_0.searched_at desc
+Hibernate: 
+    select
+        sh1_0.id,
+        sh1_0.search_query,
+        sh1_0.searched_at,
+        sh1_0.user_id 
+    from
+        search_history sh1_0 
+    left join
+        users u1_0 
+            on u1_0.id=sh1_0.user_id 
+    where
+        u1_0.id=?
+Hibernate: 
+    delete 
+    from
+        search_history 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        search_history 
+    where
+        id=?
+Hibernate: 
+    select
+        sh1_0.id,
+        sh1_0.search_query,
+        sh1_0.searched_at,
+        sh1_0.user_id 
+    from
+        search_history sh1_0 
+    left join
+        users u1_0 
+            on u1_0.id=sh1_0.user_id 
+    where
+        u1_0.id=? 
+    order by
+        sh1_0.searched_at desc
+Hibernate: 
+    select
+        sh1_0.id,
+        sh1_0.search_query,
+        sh1_0.searched_at,
+        sh1_0.user_id 
+    from
+        search_history sh1_0 
+    left join
+        users u1_0 
+            on u1_0.id=sh1_0.user_id 
+    where
+        u1_0.id=? 
+    order by
+        sh1_0.searched_at desc
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.337 s -- in com.shopsense.UserFeaturesRepositoryTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 79, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  56.729 s
+[INFO] Finished at: 2026-08-17T11:44:09+05:30
+[INFO] ------------------------------------------------------------------------

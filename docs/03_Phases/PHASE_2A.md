@@ -1890,62 +1890,538 @@ No frontend changes are required.
 After verification, Stage 6 must be committed to Git before beginning
 Stage 7.
 
-13. Stage 7 — AI Integration
-Status
+13. Stage 7 — AI Product Analysis
 
-PLANNED
+### Status
 
-AI is only used after the user has selected and viewed a specific product
-variant.
+**NEXT**
+
+### Objective
+
+Integrate Gemini AI as a product comparison and analysis assistant.
+
+Gemini must analyze structured information already collected by ShopSense AI,
+including:
+
+- Product details
+- Product specifications
+- Selected ProductVariant
+- Marketplace offers
+- Availability information
+- Delivery information
+- Recent stored reviews
+
+The AI layer must not become the source of marketplace or product facts.
+
+ShopSense AI remains responsible for retrieving, validating, and providing
+the underlying product data.
+
+---
+
+## 13.1 AI Architecture
+
+The intended architecture is:
+
+```text
+Selected ProductVariant
+        |
+        v
+Product / Comparison / Review Services
+        |
+        v
+Structured AI Input
+        |
+        v
+AI Service
+        |
+        v
+Gemini API
+        |
+        v
+Validated AI Response
+        |
+        v
+AI Response DTO
+        |
+        v
+REST API
+
+Gemini must remain isolated behind an internal AI service abstraction.
+
+Controllers must never call Gemini directly.
+
+13.2 AI Service Abstraction
+
+Create a dedicated AI service abstraction.
+
+Conceptually:
+
+AIController
+     |
+     v
+AIService
+     |
+     v
+GeminiClient
+     |
+     v
+Gemini API
+
+The core application must depend on the AI service abstraction rather than
+directly depending on Gemini-specific implementation details.
+
+This allows the AI provider to be replaced or extended in the future.
+
+For example:
+
+AIService
+    |
+    +-- GeminiAIService
+    |
+    +-- FutureAIService
+
+The initial implementation uses Gemini.
+
+13.3 Variant-Specific AI Analysis
+
+AI analysis must always operate on the exact ProductVariant selected by the
+user.
 
 Example:
 
-Search:
-iPhone 16
+Laptop
+  |
+  +-- 8GB / 512GB
+  |
+  +-- 16GB / 512GB
+  |
+  +-- 16GB / 1TB
 
-        |
-        v
+If the user selects:
 
-Select:
-iPhone 16 Pro 256GB
+16GB / 1TB
 
-        |
-        v
+Gemini must receive information specifically associated with that variant.
 
-Product Details
-        |
-        v
+The AI must not combine specifications, prices, availability, or reviews
+from different variants.
+
+For electronics with RAM/storage configurations, the selected variant is
+therefore a mandatory part of the AI input.
+
+For products without user-facing variants, the standard/default variant is
+used.
+
+13.4 Structured AI Input
+
+The backend must construct a controlled structured input before calling
+Gemini.
+
+The input may contain:
+
+Product
+Brand
+Series
+Model
+Category
+Description
+Selected Variant
+Variant name
+Variant attributes
+ProductVariant ID where useful internally
+Specifications
+Specification name
+Specification value
 Marketplace Comparison
-        |
-        v
-AI Summary
 
-The AI must focus only on the selected product variant.
+For each platform:
 
-It must not replace the selected product with another product.
+Platform name
+Current price
+Original price where available
+Currency
+Seller
+Seller rating
+Availability status
+Availability details
+Delivery information
+Offer details
+Reviews
 
-It should explain:
+Use the currently stored recent review sample.
 
-Which platform is cheaper
-Which platform offers better delivery
-Which platform has better seller/review signals
-Which platform has better offers
-Important trade-offs
+The AI input should contain only the available review data.
 
-The backend supplies trusted structured data to Gemini.
+Do not fabricate missing reviews.
+
+13.5 AI Responsibilities
+
+Gemini may be used to generate:
+
+Product overview
+Key strengths
+Potential drawbacks
+Value-for-money interpretation
+Review-based observations
+Marketplace comparison interpretation
+General buying guidance
+Variant-specific observations
+
+The AI should explain its reasoning in a concise user-friendly manner.
+
+13.6 AI Must Not Invent Facts
 
 Gemini must not invent:
 
-Prices
-Ratings
-Reviews
-Availability
-Delivery information
 Product specifications
+Prices
+Marketplace availability
+Seller information
+Delivery dates
+Reviews
+Ratings
+Product variants
+Marketplace names
+URLs
 
-Deterministic calculations remain in backend code.
+If information is unavailable, the AI should state that the information is
+not available rather than guessing.
 
-Gemini is responsible for explanation and synthesis.
+The backend should clearly distinguish between:
+
+Verified ShopSense Data
+        +
+AI Interpretation
+
+AI-generated interpretation must not overwrite the underlying structured
+data.
+
+13.7 Price and Marketplace Data
+
+The AI must not independently determine the current marketplace price.
+
+The comparison service remains the source of current offer information.
+
+Example:
+
+ComparisonService
+      |
+      +-- Amazon: ₹114,999
+      +-- Flipkart: ₹113,999
+      +-- Croma: ₹114,490
+      |
+      v
+AI Service
+      |
+      v
+"Flipkart currently has the lowest listed price among
+the available platforms."
+
+The AI may interpret the supplied prices, but the backend remains the
+authoritative source for the actual structured price values.
+
+13.8 Review Analysis
+
+Gemini may analyze the temporarily stored recent reviews.
+
+The AI can identify:
+
+Common positive themes
+Common negative themes
+Frequently mentioned strengths
+Frequently mentioned problems
+Overall review tendencies
+
+The AI must not claim that a statement is supported by reviews if the
+provided review data does not contain evidence for it.
+
+The review system remains responsible for retrieving and storing reviews.
+
+Gemini is only responsible for interpreting the supplied review sample.
+
+13.9 AI Response
+
+Create a dedicated response DTO.
+
+The response may contain:
+
+ProductVariant reference
+AI-generated summary
+Strengths
+Potential drawbacks
+Value assessment
+Review insights
+Buying guidance
+Generated timestamp
+
+The response must clearly identify AI-generated content.
+
+Do not return raw Gemini API responses directly to the frontend.
+
+13.10 AI API
+
+Implement:
+
+GET /api/v1/variants/{variantId}/ai-analysis
+Access
+
+Public, consistent with the public product analysis experience.
+
+The endpoint must operate only on the selected ProductVariant.
+
+Example:
+
+GET /api/v1/variants/25/ai-analysis
+
+The endpoint should:
+
+Validate the ProductVariant.
+Retrieve the product and variant information.
+Retrieve the current comparison information.
+Retrieve the currently stored reviews.
+Construct structured AI input.
+Invoke the internal AI service.
+Return the AI analysis response.
+
+13.11 AI API Does Not Retrieve Marketplace Data Directly
+
+The AI service must not call Amazon, Flipkart, Croma, or any marketplace
+directly.
+
+The architecture remains:
+
+Marketplace
+     |
+     v
+MarketplaceConnector
+     |
+     v
+ConnectorManager
+     |
+     v
+Comparison / Review Services
+     |
+     v
+AI Service
+
+This keeps marketplace integrations isolated from AI logic.
+
+13.12 Gemini Configuration
+
+Gemini credentials must never be hardcoded in Java source code.
+
+Use application configuration/environment variables.
+
+For example:
+
+GEMINI_API_KEY
+
+The actual API key must not be committed to Git.
+
+Production secrets must be supplied through environment configuration or an
+equivalent secure secret-management mechanism.
+
+13.13 AI Failure Handling
+
+AI failure must not affect the underlying product comparison or review
+systems.
+
+Possible failures include:
+
+Gemini unavailable
+Network timeout
+Invalid AI response
+API authentication failure
+Rate limiting
+Unexpected provider error
+
+The system should handle AI failures using the existing error-handling
+architecture.
+
+Do not expose:
+
+API keys
+Stack traces
+Provider internals
+Raw authentication errors
+
+The underlying product and marketplace data remain available even when AI
+analysis fails.
+
+13.14 AI Response Validation
+
+The application should validate the AI response before returning it to the
+frontend.
+
+The system must ensure:
+
+Required response fields are present.
+The response corresponds to the requested ProductVariant.
+Empty or malformed AI output is handled safely.
+Raw provider-specific structures are not leaked.
+
+AI-generated content must remain separate from authoritative product and
+marketplace data.
+
+13.15 AI Prompt Design
+
+The Gemini prompt must explicitly instruct the model to:
+
+Analyze only the supplied information.
+Never invent missing facts.
+Never fabricate prices, specifications, reviews, ratings, or availability.
+Treat supplied marketplace information as authoritative.
+Treat supplied review information as the available review sample.
+Focus only on the selected ProductVariant.
+Clearly distinguish observations from supplied facts.
+Provide concise and useful consumer-oriented analysis.
+
+The prompt should be generated by the backend rather than supplied directly
+by the frontend.
+
+The frontend must never be allowed to control the system-level AI
+instructions.
+
+13.16 AI Data Flow
+
+The complete Stage 7 flow is:
+
+User selects ProductVariant
+          |
+          v
+AI Controller
+          |
+          v
+AI Service
+          |
+          +-------------------+
+          |                   |
+          v                   v
+Product/Variant          Comparison
+Data                     Data
+          |                   |
+          +---------+---------+
+                    |
+                    v
+                 Reviews
+                    |
+                    v
+          Structured AI Input
+                    |
+                    v
+              Gemini Service
+                    |
+                    v
+              Gemini API
+                    |
+                    v
+          Validated AI Output
+                    |
+                    v
+           AI Analysis DTO
+                    |
+                    v
+                 Client
+13.17 No Permanent AI History
+
+Stage 7 does not require permanent storage of every generated AI response.
+
+The initial implementation may generate the analysis on request.
+
+Do not introduce an AI history table unless explicitly required by a later
+stage.
+
+The architecture should remain extensible for future caching if repeated
+AI requests become expensive.
+
+13.18 AI Caching
+
+Permanent AI response caching is NOT required in Stage 7.
+
+If caching is introduced later, the cache must be associated with the exact
+ProductVariant and the underlying data version/freshness.
+
+AI analysis must not silently become stale while marketplace prices,
+availability, or reviews have changed.
+
+13.19 Security
+
+The Gemini API key must remain backend-only.
+
+The frontend must never communicate directly with Gemini.
+
+The frontend communicates only with:
+
+ShopSense Backend
+
+and the backend communicates with Gemini.
+
+13.20 Testing
+
+Stage 7 must include tests for:
+
+AI analysis for a valid ProductVariant.
+Exact ProductVariant data is supplied to the AI service.
+Product specifications are included correctly.
+Current marketplace comparison data is included.
+Current stored reviews are included.
+AI service is isolated behind an abstraction.
+Gemini client is not called directly by controllers.
+Missing ProductVariant returns 404.
+AI provider failure is handled safely.
+Malformed AI response is handled safely.
+AI does not replace authoritative marketplace data.
+API is publicly accessible if configured as public.
+API response uses DTOs.
+API keys are not exposed in responses or source-controlled configuration.
+All Stage 1–6 tests continue to pass.
+
+Tests must mock the Gemini integration.
+
+Do not make real Gemini API calls during automated tests.
+
+13.21 Out of Scope
+
+Do NOT implement in Stage 7:
+
+AI chat assistant
+Autonomous purchasing
+Automatic scholarship/application-style actions
+Real marketplace scraping
+Price prediction
+Permanent price history
+Permanent AI history
+Personalized recommendation engine
+Wishlist AI automation
+Search-history AI personalization
+Frontend AI UI
+
+These may be considered in future stages.
+
+13.22 Completion Criteria
+
+Stage 7 is complete when:
+
+AI service abstraction exists.
+Gemini integration exists behind the abstraction.
+Gemini credentials are securely configured.
+Exact ProductVariant is used as the analysis context.
+Product data is supplied to Gemini.
+Comparison data is supplied to Gemini.
+Stored recent reviews are supplied to Gemini.
+AI cannot directly access marketplace connectors.
+AI cannot overwrite authoritative structured data.
+AI does not invent missing information by design.
+AI failures are isolated.
+AI response is validated and returned through a DTO.
+Public AI analysis endpoint works.
+All Stage 7 tests pass.
+All Stage 1–6 tests continue to pass.
+No frontend changes are required.
+No permanent AI history is introduced.
+
+After verification, Stage 7 must be committed to Git before beginning
+Stage 8.
 
 14. Stage 8 — AI Cache
 Status
