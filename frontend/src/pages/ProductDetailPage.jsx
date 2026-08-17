@@ -26,11 +26,17 @@ import {
     Layers,
     ListAlt,
 } from '@mui/icons-material';
-import { getProductById, getProductVariants, getVariantComparison } from '../api/catalog';
+import {
+    getProductById,
+    getProductVariants,
+    getVariantComparison,
+    getVariantAIAnalysis,
+} from '../api/catalog';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import ComparisonTable from '../components/product/ComparisonTable';
 import ReviewList from '../components/product/ReviewList';
+import AIAnalysisCard from '../components/product/AIAnalysisCard';
 
 const ProductDetailPage = () => {
     const { productId } = useParams();
@@ -51,6 +57,11 @@ const ProductDetailPage = () => {
     const [comparisonData, setComparisonData] = useState(null);
     const [comparisonLoading, setComparisonLoading] = useState(false);
     const [comparisonError, setComparisonError] = useState(null);
+
+    // AI Analysis state
+    const [aiAnalysisData, setAiAnalysisData] = useState(null);
+    const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
+    const [aiAnalysisError, setAiAnalysisError] = useState(null);
 
     const [imageError, setImageError] = useState(false);
 
@@ -109,6 +120,24 @@ const ProductDetailPage = () => {
         }
     }, []);
 
+    // Fetch AI Analysis data for the selected variant
+    const loadAIAnalysisData = useCallback(async (variantId) => {
+        if (!variantId) return;
+
+        setAiAnalysisLoading(true);
+        setAiAnalysisError(null);
+
+        try {
+            const aiData = await getVariantAIAnalysis(variantId);
+            setAiAnalysisData(aiData);
+        } catch (err) {
+            console.error('Failed to fetch AI analysis:', err);
+            setAiAnalysisError(err?.response?.data?.message || 'Failed to generate AI product analysis.');
+        } finally {
+            setAiAnalysisLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         loadProductData();
     }, [loadProductData]);
@@ -121,6 +150,15 @@ const ProductDetailPage = () => {
             setComparisonData(null);
         }
     }, [selectedVariant?.id, loadComparisonData]);
+
+    // Trigger AI analysis fetch when selected variant changes
+    useEffect(() => {
+        if (selectedVariant?.id) {
+            loadAIAnalysisData(selectedVariant.id);
+        } else {
+            setAiAnalysisData(null);
+        }
+    }, [selectedVariant?.id, loadAIAnalysisData]);
 
     // Handle variant selection
     const handleVariantSelect = (variant) => {
@@ -491,6 +529,22 @@ const ProductDetailPage = () => {
                     variantId={selectedVariant.id}
                     platforms={comparisonData?.offers?.map((o) => o.platform).filter(Boolean) || []}
                 />
+            )}
+
+            {/* AI Product Analysis Section */}
+            {selectedVariant?.id && (
+                <Box sx={{ mt: 2 }}>
+                    {aiAnalysisLoading ? (
+                        <LoadingState message="Generating AI product analysis..." minHeight="250px" />
+                    ) : aiAnalysisError ? (
+                        <ErrorState
+                            message={aiAnalysisError}
+                            onRetry={() => loadAIAnalysisData(selectedVariant.id)}
+                        />
+                    ) : (
+                        <AIAnalysisCard aiAnalysis={aiAnalysisData} />
+                    )}
+                </Box>
             )}
         </Container>
     );
