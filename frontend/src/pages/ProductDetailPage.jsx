@@ -30,6 +30,7 @@ import { getProductById, getProductVariants, getVariantComparison } from '../api
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import ComparisonTable from '../components/product/ComparisonTable';
+import ReviewList from '../components/product/ReviewList';
 
 const ProductDetailPage = () => {
     const { productId } = useParams();
@@ -482,6 +483,14 @@ const ProductDetailPage = () => {
                         <ComparisonTable comparisonData={comparisonData} />
                     )}
                 </Box>
+            )}
+
+            {/* Customer Reviews Section */}
+            {selectedVariant?.id && (
+                <ReviewList
+                    variantId={selectedVariant.id}
+                    platforms={comparisonData?.offers?.map((o) => o.platform).filter(Boolean) || []}
+                />
             )}
         </Container>
     );
