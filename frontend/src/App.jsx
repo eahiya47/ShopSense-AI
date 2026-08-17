@@ -15,6 +15,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import WishlistPage from './pages/WishlistPage';
+import SearchHistoryPage from './pages/SearchHistoryPage';
 
 function App() {
     return (
@@ -44,6 +46,22 @@ function App() {
                                     element={
                                         <ProtectedRoute>
                                             <ProfilePage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/wishlist"
+                                    element={
+                                        <ProtectedRoute>
+                                            <WishlistPage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/search-history"
+                                    element={
+                                        <ProtectedRoute>
+                                            <SearchHistoryPage />
                                         </ProtectedRoute>
                                     }
                                 />

@@ -15,11 +15,12 @@ import {
     ListItemIcon,
 } from '@mui/material';
 import {
-    ShoppingBag,
     Dashboard as DashboardIcon,
     Person as PersonIcon,
     Logout as LogoutIcon,
     AutoAwesome,
+    Favorite as FavoriteIcon,
+    History as HistoryIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
@@ -68,16 +69,44 @@ const Navbar = () => {
                     </Box>
 
                     {/* Right Menu Links */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
                         {isAuthenticated ? (
                             <>
                                 <Button
                                     component={RouterLink}
                                     to="/dashboard"
                                     startIcon={<DashboardIcon />}
-                                    sx={{ color: '#94a3b8', '&:hover': { color: '#fff', bgcolor: 'rgba(255, 255, 255, 0.05)' } }}
+                                    sx={{
+                                        display: { xs: 'none', sm: 'inline-flex' },
+                                        color: '#94a3b8',
+                                        '&:hover': { color: '#fff', bgcolor: 'rgba(255, 255, 255, 0.05)' },
+                                    }}
                                 >
                                     Dashboard
+                                </Button>
+                                <Button
+                                    component={RouterLink}
+                                    to="/wishlist"
+                                    startIcon={<FavoriteIcon />}
+                                    sx={{
+                                        display: { xs: 'none', md: 'inline-flex' },
+                                        color: '#94a3b8',
+                                        '&:hover': { color: '#ec4899', bgcolor: 'rgba(236, 72, 153, 0.05)' },
+                                    }}
+                                >
+                                    Wishlist
+                                </Button>
+                                <Button
+                                    component={RouterLink}
+                                    to="/search-history"
+                                    startIcon={<HistoryIcon />}
+                                    sx={{
+                                        display: { xs: 'none', md: 'inline-flex' },
+                                        color: '#94a3b8',
+                                        '&:hover': { color: '#22d3ee', bgcolor: 'rgba(6, 182, 212, 0.05)' },
+                                    }}
+                                >
+                                    History
                                 </Button>
                                 <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, border: '2px solid rgba(99, 102, 241, 0.5)' }}>
                                     <Avatar sx={{ bgcolor: '#6366f1', width: 36, height: 36, fontWeight: 700 }}>
@@ -109,13 +138,21 @@ const Navbar = () => {
                                         </Typography>
                                     </Box>
                                     <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
-                                    <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }}>
-                                        <ListItemIcon><PersonIcon fontSize="small" sx={{ color: '#818cf8' }} /></ListItemIcon>
-                                        Profile
-                                    </MenuItem>
                                     <MenuItem onClick={() => { handleMenuClose(); navigate('/dashboard'); }}>
                                         <ListItemIcon><DashboardIcon fontSize="small" sx={{ color: '#818cf8' }} /></ListItemIcon>
                                         Dashboard
+                                    </MenuItem>
+                                    <MenuItem onClick={() => { handleMenuClose(); navigate('/wishlist'); }}>
+                                        <ListItemIcon><FavoriteIcon fontSize="small" sx={{ color: '#ec4899' }} /></ListItemIcon>
+                                        Wishlist
+                                    </MenuItem>
+                                    <MenuItem onClick={() => { handleMenuClose(); navigate('/search-history'); }}>
+                                        <ListItemIcon><HistoryIcon fontSize="small" sx={{ color: '#22d3ee' }} /></ListItemIcon>
+                                        Search History
+                                    </MenuItem>
+                                    <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }}>
+                                        <ListItemIcon><PersonIcon fontSize="small" sx={{ color: '#818cf8' }} /></ListItemIcon>
+                                        Profile
                                     </MenuItem>
                                     <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
                                     <MenuItem onClick={handleLogout} sx={{ color: '#ef4444' }}>
