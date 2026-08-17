@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Card,
     CardContent,
@@ -25,11 +26,18 @@ import { ImageNotSupported, Layers } from '@mui/icons-material';
  * @param {function} onClick - Optional click handler for parent-controlled action/navigation
  */
 const ProductCard = ({ product, onClick }) => {
+    const navigate = useNavigate();
     const [imageError, setImageError] = useState(false);
 
     if (!product) {
         return null;
     }
+
+    const handleCardClick = onClick || (() => {
+        if (product?.id) {
+            navigate(`/products/${product.id}`);
+        }
+    });
 
     const { brand, series, model, category, imageUrl, hasVariants } = product;
 
@@ -105,8 +113,6 @@ const ProductCard = ({ product, onClick }) => {
         </CardContent>
     );
 
-    const CardContainer = onClick ? CardActionArea : Box;
-
     return (
         <Card
             sx={{
@@ -114,16 +120,14 @@ const ProductCard = ({ product, onClick }) => {
                 display: 'flex',
                 flexDirection: 'column',
                 transition: 'transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease',
-                '&:hover': onClick
-                    ? {
-                        transform: 'translateY(-4px)',
-                        borderColor: 'rgba(99, 102, 241, 0.5)',
-                        boxShadow: '0 8px 24px rgba(99, 102, 241, 0.2)',
-                    }
-                    : {},
+                '&:hover': {
+                    transform: 'translateY(-4px)',
+                    borderColor: 'rgba(99, 102, 241, 0.5)',
+                    boxShadow: '0 8px 24px rgba(99, 102, 241, 0.2)',
+                },
             }}
         >
-            <CardContainer onClick={onClick} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+            <CardActionArea onClick={handleCardClick} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
                 {/* Product Image Section */}
                 {imageUrl && !imageError ? (
                     <CardMedia
@@ -158,7 +162,7 @@ const ProductCard = ({ product, onClick }) => {
                 )}
 
                 {cardContent}
-            </CardContainer>
+            </CardActionArea>
         </Card>
     );
 };
