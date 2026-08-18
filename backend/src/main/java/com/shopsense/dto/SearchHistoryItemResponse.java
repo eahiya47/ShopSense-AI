@@ -14,5 +14,6 @@ import java.time.LocalDateTime;
 public class SearchHistoryItemResponse {
     private Long id;
     private String query;
+    private String category;
     private LocalDateTime searchedAt;
 }

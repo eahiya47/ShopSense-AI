@@ -20,6 +20,7 @@ import {
     TrendingUp,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import QuickSearchBar from '../components/product/QuickSearchBar';
 
 const DashboardPage = () => {
     const { user } = useAuth();
@@ -34,7 +35,7 @@ const DashboardPage = () => {
                     background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 50%, rgba(236, 72, 153, 0.15) 100%)',
                     border: '1px solid rgba(99, 102, 241, 0.3)',
                     backdropFilter: 'blur(16px)',
-                    mb: 6,
+                    mb: 4,
                 }}
             >
                 <Grid container spacing={3} alignItems="center">
@@ -75,6 +76,26 @@ const DashboardPage = () => {
                         </Avatar>
                     </Grid>
                 </Grid>
+            </Box>
+
+            {/* Quick Product Search Section */}
+            <Box
+                sx={{
+                    p: { xs: 3, md: 4 },
+                    borderRadius: 4,
+                    bgcolor: 'rgba(19, 27, 46, 0.75)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    mb: 6,
+                }}
+            >
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#fff', mb: 1 }}>
+                    What are you looking for today?
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3 }}>
+                    Search products across e-commerce platforms to compare prices, reviews, and specs in real-time.
+                </Typography>
+                <QuickSearchBar placeholder="Search products (e.g. iPhone 16 Pro, Gaming Laptop, Headphones)..." />
             </Box>
 
             {/* Module Overview Placeholders */}

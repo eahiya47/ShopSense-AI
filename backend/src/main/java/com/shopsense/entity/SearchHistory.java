@@ -26,6 +26,9 @@ public class SearchHistory {
     @Column(name = "search_query", nullable = false, length = 500)
     private String searchQuery;
 
+    @Column(name = "category", length = 255)
+    private String category;
+
     @CreationTimestamp
     @Column(name = "searched_at", nullable = false, updatable = false)
     private LocalDateTime searchedAt;

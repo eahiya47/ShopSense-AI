@@ -14,4 +14,6 @@ public class SearchHistoryRequest {
 
     @NotBlank(message = "Search query is required")
     private String query;
+
+    private String category;
 }

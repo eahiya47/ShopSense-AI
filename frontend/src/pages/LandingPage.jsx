@@ -20,6 +20,8 @@ import {
     ArrowForward,
 } from '@mui/icons-material';
 
+import QuickSearchBar from '../components/product/QuickSearchBar';
+
 const LandingPage = () => {
     return (
         <Box sx={{ minHeight: '80vh' }}>
@@ -59,13 +61,17 @@ const LandingPage = () => {
                             fontWeight: 400,
                             maxWidth: 750,
                             mx: 'auto',
-                            mb: 5,
+                            mb: 4,
                             fontSize: { xs: '1rem', md: '1.25rem' },
                             lineHeight: 1.6,
                         }}
                     >
                         ShopSense AI aggregates real-time prices, specs, and review summaries from Amazon, Flipkart, Croma, and Reliance Digital to find your perfect match.
                     </Typography>
+
+                    <Box sx={{ maxWidth: 750, mx: 'auto', mb: 4 }}>
+                        <QuickSearchBar />
+                    </Box>
 
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
                         <Button

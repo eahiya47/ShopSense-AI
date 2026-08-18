@@ -119,6 +119,14 @@ const LoginPage = () => {
                                     </InputAdornment>
                                 ),
                             }}
+                            sx={{
+                                '& .MuiInputBase-input:-webkit-autofill': {
+                                    WebkitBoxShadow: '0 0 0 1000px #131b2e inset',
+                                    WebkitTextFillColor: '#f8fafc',
+                                    caretColor: '#f8fafc',
+                                    transition: 'background-color 5000s ease-in-out 0s',
+                                },
+                            }}
                         />
 
                         <TextField
@@ -149,6 +157,14 @@ const LoginPage = () => {
                                         </IconButton>
                                     </InputAdornment>
                                 ),
+                            }}
+                            sx={{
+                                '& .MuiInputBase-input:-webkit-autofill': {
+                                    WebkitBoxShadow: '0 0 0 1000px #131b2e inset',
+                                    WebkitTextFillColor: '#f8fafc',
+                                    caretColor: '#f8fafc',
+                                    transition: 'background-color 5000s ease-in-out 0s',
+                                },
                             }}
                         />
 

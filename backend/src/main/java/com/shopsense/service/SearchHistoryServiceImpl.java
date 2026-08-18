@@ -29,9 +29,14 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
+                String category = (request.getCategory() != null && !request.getCategory().trim().isEmpty())
+                                ? request.getCategory().trim()
+                                : null;
+
                 SearchHistory searchHistory = SearchHistory.builder()
                                 .user(user)
                                 .searchQuery(request.getQuery().trim())
+                                .category(category)
                                 .build();
 
                 searchHistoryRepository.save(searchHistory);
@@ -48,6 +53,7 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
                                 .map(sh -> SearchHistoryItemResponse.builder()
                                                 .id(sh.getId())
                                                 .query(sh.getSearchQuery())
+                                                .category(sh.getCategory())
                                                 .searchedAt(sh.getSearchedAt())
                                                 .build())
                                 .collect(Collectors.toList());

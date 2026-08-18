@@ -7,10 +7,7 @@ import {
     Paper,
     Button,
     IconButton,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemIcon,
+    Chip,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -63,9 +60,14 @@ const SearchHistoryPage = () => {
         fetchHistory();
     }, [fetchHistory]);
 
-    const handleSearchQueryClick = (query) => {
+    const handleSearchQueryClick = (query, category) => {
         if (query) {
-            navigate(`/search?q=${encodeURIComponent(query)}`);
+            const params = new URLSearchParams();
+            params.set('q', query);
+            if (category && category.trim()) {
+                params.set('category', category.trim());
+            }
+            navigate(`/search?${params.toString()}`);
         }
     };
 
@@ -119,7 +121,23 @@ const SearchHistoryPage = () => {
         if (!dateStr) return null;
         try {
             const date = new Date(dateStr);
-            return isNaN(date.getTime()) ? String(dateStr) : date.toLocaleString();
+            if (isNaN(date.getTime())) return String(dateStr);
+
+            const now = new Date();
+            const isToday = date.toDateString() === now.toDateString();
+            const yesterday = new Date(now);
+            yesterday.setDate(now.getDate() - 1);
+            const isYesterday = date.toDateString() === yesterday.toDateString();
+
+            const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+            if (isToday) {
+                return `Today · ${timeStr}`;
+            } else if (isYesterday) {
+                return `Yesterday · ${timeStr}`;
+            } else {
+                return `${date.toLocaleDateString([], { month: 'short', day: 'numeric' })} · ${timeStr}`;
+            }
         } catch (e) {
             return String(dateStr);
         }
@@ -174,7 +192,7 @@ const SearchHistoryPage = () => {
                             Search History
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-                            Your recent product searches across ShopSense AI
+                            Your recent searches and discoveries
                         </Typography>
                     </Box>
                 </Box>
@@ -186,10 +204,11 @@ const SearchHistoryPage = () => {
                         startIcon={<DeleteSweep />}
                         onClick={() => setConfirmClearOpen(true)}
                         sx={{
-                            borderColor: 'rgba(239, 68, 68, 0.4)',
+                            borderColor: 'rgba(239, 68, 68, 0.3)',
                             color: '#f87171',
                             fontWeight: 600,
                             textTransform: 'none',
+                            borderRadius: 2,
                             '&:hover': {
                                 borderColor: '#ef4444',
                                 bgcolor: 'rgba(239, 68, 68, 0.1)',
@@ -206,7 +225,7 @@ const SearchHistoryPage = () => {
                 <Paper
                     elevation={0}
                     sx={{
-                        p: 6,
+                        p: { xs: 5, sm: 7 },
                         textAlign: 'center',
                         bgcolor: 'rgba(19, 27, 46, 0.6)',
                         backdropFilter: 'blur(12px)',
@@ -214,110 +233,165 @@ const SearchHistoryPage = () => {
                         borderRadius: 4,
                     }}
                 >
-                    <History sx={{ fontSize: 56, color: 'rgba(6, 182, 212, 0.3)', mb: 2 }} />
-                    <Typography variant="h6" sx={{ color: '#f8fafc', fontWeight: 700, mb: 1 }}>
-                        No search history yet.
+                    <Box
+                        sx={{
+                            width: 64,
+                            height: 64,
+                            borderRadius: '50%',
+                            bgcolor: 'rgba(6, 182, 212, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mx: 'auto',
+                            mb: 2,
+                        }}
+                    >
+                        <History sx={{ fontSize: 32, color: '#06b6d4' }} />
+                    </Box>
+                    <Typography variant="h5" sx={{ color: '#f8fafc', fontWeight: 700, mb: 1 }}>
+                        Search history is empty
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3, maxWidth: 450, mx: 'auto' }}>
-                        Searches you perform will be saved here for easy re-discovery.
+                    <Typography variant="body1" sx={{ color: '#94a3b8', mb: 3.5, maxWidth: 460, mx: 'auto' }}>
+                        Your searches will appear here when you start exploring products.
                     </Typography>
                     <Button
                         variant="contained"
                         startIcon={<Search />}
                         onClick={() => navigate('/search')}
                         sx={{
+                            py: 1.2,
+                            px: 3,
                             background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
                             fontWeight: 600,
                             textTransform: 'none',
+                            borderRadius: 2,
+                            boxShadow: '0 4px 14px rgba(6, 182, 212, 0.3)',
                         }}
                     >
                         Start Searching
                     </Button>
                 </Paper>
             ) : (
-                <Paper
-                    elevation={0}
-                    sx={{
-                        bgcolor: 'rgba(19, 27, 46, 0.75)',
-                        backdropFilter: 'blur(12px)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        borderRadius: 3,
-                        overflow: 'hidden',
-                    }}
-                >
-                    <List disablePadding>
-                        {historyItems.map((item, index) => {
-                            const formattedDate = formatSearchedDate(item.searchedAt);
-                            const isLast = index === historyItems.length - 1;
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    {historyItems.map((item) => {
+                        const formattedDate = formatSearchedDate(item.searchedAt);
 
-                            return (
-                                <ListItem
-                                    key={item.id}
-                                    divider={!isLast}
+                        return (
+                            <Paper
+                                key={item.id}
+                                elevation={0}
+                                sx={{
+                                    p: { xs: 2, sm: 2.5 },
+                                    bgcolor: 'rgba(19, 27, 46, 0.75)',
+                                    backdropFilter: 'blur(12px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                                    borderRadius: 3,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                                    gap: 2,
+                                    transition: 'all 0.2s ease-in-out',
+                                    '&:hover': {
+                                        bgcolor: 'rgba(255, 255, 255, 0.03)',
+                                        borderColor: 'rgba(6, 182, 212, 0.3)',
+                                        transform: 'translateY(-1px)',
+                                    },
+                                }}
+                            >
+                                {/* Left: Query & Category group */}
+                                <Box
+                                    onClick={() => handleSearchQueryClick(item.query, item.category)}
                                     sx={{
-                                        py: 2,
-                                        px: 3,
-                                        borderColor: 'rgba(255, 255, 255, 0.05)',
-                                        transition: 'background-color 0.2s ease',
-                                        '&:hover': {
-                                            bgcolor: 'rgba(255, 255, 255, 0.03)',
-                                        },
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5,
+                                        flexGrow: 1,
+                                        minWidth: 0,
+                                        cursor: 'pointer',
                                     }}
-                                    secondaryAction={
-                                        <Tooltip title="Delete entry">
-                                            <IconButton
-                                                edge="end"
-                                                onClick={() => handleDeleteItem(item.id)}
-                                                aria-label={`Delete search entry for ${item.query}`}
-                                                sx={{
-                                                    color: '#94a3b8',
-                                                    '&:hover': { color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.1)' },
-                                                }}
-                                            >
-                                                <Delete fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    }
                                 >
-                                    <ListItemIcon
-                                        onClick={() => handleSearchQueryClick(item.query)}
-                                        sx={{ minWidth: 42, cursor: 'pointer' }}
+                                    <Box
+                                        sx={{
+                                            width: 38,
+                                            height: 38,
+                                            borderRadius: 2,
+                                            bgcolor: 'rgba(6, 182, 212, 0.12)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            flexShrink: 0,
+                                        }}
                                     >
-                                        <Search sx={{ color: '#06b6d4' }} />
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary={
-                                            <Typography
-                                                variant="subtitle1"
-                                                onClick={() => handleSearchQueryClick(item.query)}
-                                                sx={{
-                                                    fontWeight: 600,
-                                                    color: '#f8fafc',
-                                                    cursor: 'pointer',
-                                                    '&:hover': { color: '#38bdf8', textDecoration: 'underline' },
-                                                }}
-                                            >
-                                                {item.query}
-                                            </Typography>
-                                        }
-                                        secondary={
-                                            formattedDate && (
-                                                <Typography
-                                                    component="span"
-                                                    variant="caption"
-                                                    sx={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}
-                                                >
-                                                    <AccessTime sx={{ fontSize: '0.8rem' }} />
-                                                    {formattedDate}
-                                                </Typography>
-                                            )
-                                        }
-                                    />
-                                </ListItem>
-                            );
-                        })}
-                    </List>
-                </Paper>
+                                        <Search sx={{ color: '#06b6d4', fontSize: 20 }} />
+                                    </Box>
+
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, flexWrap: 'wrap', minWidth: 0 }}>
+                                        <Typography
+                                            variant="subtitle1"
+                                            sx={{
+                                                fontWeight: 700,
+                                                color: '#f8fafc',
+                                                fontSize: { xs: '0.95rem', sm: '1rem' },
+                                                '&:hover': { color: '#38bdf8' },
+                                            }}
+                                        >
+                                            {item.query}
+                                        </Typography>
+
+                                        <Chip
+                                            label={item.category ? item.category : 'All Categories'}
+                                            size="small"
+                                            variant="outlined"
+                                            sx={{
+                                                height: 24,
+                                                fontSize: '0.75rem',
+                                                fontWeight: 600,
+                                                color: item.category ? '#22d3ee' : '#94a3b8',
+                                                borderColor: item.category ? 'rgba(6, 182, 212, 0.35)' : 'rgba(255, 255, 255, 0.12)',
+                                                bgcolor: item.category ? 'rgba(6, 182, 212, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                                            }}
+                                        />
+                                    </Box>
+                                </Box>
+
+                                {/* Right: Timestamp & Delete action */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0, ml: { xs: 'auto', sm: 0 } }}>
+                                    {formattedDate && (
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                color: '#64748b',
+                                                fontWeight: 500,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 0.6,
+                                                fontSize: '0.8rem',
+                                            }}
+                                        >
+                                            <AccessTime sx={{ fontSize: '0.85rem', color: '#64748b' }} />
+                                            {formattedDate}
+                                        </Typography>
+                                    )}
+
+                                    <Tooltip title="Delete entry">
+                                        <IconButton
+                                            onClick={() => handleDeleteItem(item.id)}
+                                            aria-label={`Delete search entry for ${item.query}`}
+                                            size="small"
+                                            sx={{
+                                                color: '#64748b',
+                                                '&:hover': { color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.1)' },
+                                            }}
+                                        >
+                                            <Delete fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Box>
+                            </Paper>
+                        );
+                    })}
+                </Box>
             )}
 
             {/* Clear All Confirmation Dialog */}

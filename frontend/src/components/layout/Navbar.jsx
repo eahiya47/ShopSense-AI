@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import {
     AppBar,
     Toolbar,
@@ -27,7 +27,11 @@ import { useAuth } from '../../context/AuthContext';
 const Navbar = () => {
     const { user, isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [anchorEl, setAnchorEl] = useState(null);
+
+    const hideAuthenticatedNav = ['/', '/login', '/register'].includes(location.pathname);
+    const showAuthenticatedNav = isAuthenticated && !hideAuthenticatedNav;
 
     const handleMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -70,7 +74,7 @@ const Navbar = () => {
 
                     {/* Right Menu Links */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
-                        {isAuthenticated ? (
+                        {showAuthenticatedNav ? (
                             <>
                                 <Button
                                     component={RouterLink}

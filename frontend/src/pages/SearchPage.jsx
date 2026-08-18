@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Search as SearchIcon, Clear as ClearIcon, FilterList as FilterIcon } from '@mui/icons-material';
 import { searchProducts } from '../api/catalog';
-import { saveSearchHistory } from '../api/userFeatures';
+import { saveSearchHistory, getSearchHistory } from '../api/userFeatures';
 import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/product/ProductCard';
 import LoadingState from '../components/common/LoadingState';
@@ -23,11 +23,75 @@ import ErrorState from '../components/common/ErrorState';
 
 const PAGE_SIZE = 12;
 
+const makeSearchKey = (query, category) => {
+    const q = (query || '').trim().toLowerCase();
+    const c = (category || '').trim().toLowerCase();
+    return `${q}|${c}`;
+};
+
 const SearchPage = () => {
 
-    const { isAuthenticated } = useAuth();
+    const { user, isAuthenticated } = useAuth();
 
     const [searchParams, setSearchParams] = useSearchParams();
+
+    // Cache key for current session
+    const getCacheKey = useCallback(() => `shopsense_history_keys_${user?.id || 'anon'}`, [user?.id]);
+
+    const getHistoryKeysCache = useCallback(() => {
+        try {
+            const raw = sessionStorage.getItem(getCacheKey());
+            return raw ? new Set(JSON.parse(raw)) : null;
+        } catch (e) {
+            return null;
+        }
+    }, [getCacheKey]);
+
+    const addHistoryKeyToCache = useCallback((searchKey) => {
+        try {
+            const cache = getHistoryKeysCache() || new Set();
+            cache.add(searchKey);
+            sessionStorage.setItem(getCacheKey(), JSON.stringify(Array.from(cache)));
+        } catch (e) {
+            console.error('Failed to update search history cache', e);
+        }
+    }, [getHistoryKeysCache, getCacheKey]);
+
+    // Save search history entry if authenticated, new, and on page 1
+    const maybeSaveSearchHistory = useCallback(async (query, category, pageIndex) => {
+        if (!isAuthenticated) return;
+        if (!query || !query.trim()) return;
+        if (pageIndex > 0) return;
+
+        const searchKey = makeSearchKey(query, category);
+
+        let cache = getHistoryKeysCache();
+        if (!cache) {
+            try {
+                const data = await getSearchHistory();
+                const existingKeys = (data?.history || []).map((item) =>
+                    makeSearchKey(item.query, item.category)
+                );
+                cache = new Set(existingKeys);
+                sessionStorage.setItem(getCacheKey(), JSON.stringify(Array.from(cache)));
+            } catch (err) {
+                console.error('Failed to fetch existing search history keys:', err);
+                cache = new Set();
+            }
+        }
+
+        if (cache.has(searchKey)) {
+            return;
+        }
+
+        addHistoryKeyToCache(searchKey);
+        try {
+            await saveSearchHistory(query, category);
+            console.log('Search history saved:', query, category);
+        } catch (err) {
+            console.error('Failed to save search history:', err?.response?.data || err);
+        }
+    }, [isAuthenticated, getHistoryKeysCache, getCacheKey, addHistoryKeyToCache]);
 
     // Read initial URL params
     const initialQuery = searchParams.get('q') || '';
@@ -79,15 +143,16 @@ const SearchPage = () => {
         // Execute search if query or category parameter is present in URL
         if (query.trim() !== '' || category.trim() !== '') {
             executeSearch(query.trim(), category.trim(), pageIndex);
+            maybeSaveSearchHistory(query.trim(), category.trim(), pageIndex);
         } else {
             // Initial landing on /search with no params
             setSearchResponse(null);
             setHasSearched(false);
         }
-    }, [searchParams, executeSearch]);
+    }, [searchParams, executeSearch, maybeSaveSearchHistory]);
 
     // Handle form submit (button click or Enter key)
-    const handleSearchSubmit = async (e) => {
+    const handleSearchSubmit = (e) => {
         if (e) e.preventDefault();
 
         const query = searchInput.trim();
@@ -101,19 +166,6 @@ const SearchPage = () => {
         nextParams.page = '1';
 
         setSearchParams(nextParams);
-
-        // Save search history only for logged-in users
-        if (isAuthenticated && query) {
-            try {
-                await saveSearchHistory(query);
-                console.log('Search history saved:', query);
-            } catch (err) {
-                console.error(
-                    'Failed to save search history:',
-                    err?.response?.data || err
-                );
-            }
-        }
     };
 
     // Clear search inputs
@@ -123,11 +175,15 @@ const SearchPage = () => {
         setSearchParams({});
     };
 
+    // Active search parameters derived from URL (represents executed search state)
+    const activeQuery = searchParams.get('q') || '';
+    const activeCategory = searchParams.get('category') || '';
+
     // Handle pagination page change
     const handlePageChange = (event, newUiPage) => {
         const nextParams = {};
-        if (searchInput.trim()) nextParams.q = searchInput.trim();
-        if (categoryInput.trim()) nextParams.category = categoryInput.trim();
+        if (activeQuery) nextParams.q = activeQuery;
+        if (activeCategory) nextParams.category = activeCategory;
         nextParams.page = newUiPage.toString();
 
         setSearchParams(nextParams);
@@ -139,7 +195,6 @@ const SearchPage = () => {
     const totalResults = searchResponse?.totalResults || 0;
     const totalPages = searchResponse?.totalPages || 0;
     const currentPageIndex = searchResponse?.page ?? 0;
-    const activeQuery = searchResponse?.query || initialQuery;
 
     return (
         <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
@@ -316,9 +371,9 @@ const SearchPage = () => {
                                     sx={{ bgcolor: 'rgba(99, 102, 241, 0.15)', color: '#818cf8', fontWeight: 600 }}
                                 />
                             )}
-                            {categoryInput && (
+                            {activeCategory && (
                                 <Chip
-                                    label={`Category: "${categoryInput}"`}
+                                    label={`Category: "${activeCategory}"`}
                                     size="small"
                                     sx={{ bgcolor: 'rgba(6, 182, 212, 0.15)', color: '#22d3ee', fontWeight: 600 }}
                                 />
