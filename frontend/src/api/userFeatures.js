@@ -31,8 +31,8 @@ export const removeFromWishlist = async (productVariantId) => {
  * Save a search query to the authenticated user's search history.
  * POST /api/v1/search-history
  */
-export const saveSearchHistory = async (searchQuery) => {
-    const response = await api.post('/search-history', { searchQuery });
+export const saveSearchHistory = async (query) => {
+    const response = await api.post('/search-history', { query });
     return response.data;
 };
 

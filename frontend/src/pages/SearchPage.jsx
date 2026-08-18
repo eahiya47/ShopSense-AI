@@ -15,6 +15,8 @@ import {
 } from '@mui/material';
 import { Search as SearchIcon, Clear as ClearIcon, FilterList as FilterIcon } from '@mui/icons-material';
 import { searchProducts } from '../api/catalog';
+import { saveSearchHistory } from '../api/userFeatures';
+import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/product/ProductCard';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
@@ -22,6 +24,9 @@ import ErrorState from '../components/common/ErrorState';
 const PAGE_SIZE = 12;
 
 const SearchPage = () => {
+
+    const { isAuthenticated } = useAuth();
+
     const [searchParams, setSearchParams] = useSearchParams();
 
     // Read initial URL params
@@ -82,14 +87,33 @@ const SearchPage = () => {
     }, [searchParams, executeSearch]);
 
     // Handle form submit (button click or Enter key)
-    const handleSearchSubmit = (e) => {
+    const handleSearchSubmit = async (e) => {
         if (e) e.preventDefault();
+
+        const query = searchInput.trim();
+        const category = categoryInput.trim();
+
         const nextParams = {};
-        if (searchInput.trim()) nextParams.q = searchInput.trim();
-        if (categoryInput.trim()) nextParams.category = categoryInput.trim();
+
+        if (query) nextParams.q = query;
+        if (category) nextParams.category = category;
+
         nextParams.page = '1';
 
         setSearchParams(nextParams);
+
+        // Save search history only for logged-in users
+        if (isAuthenticated && query) {
+            try {
+                await saveSearchHistory(query);
+                console.log('Search history saved:', query);
+            } catch (err) {
+                console.error(
+                    'Failed to save search history:',
+                    err?.response?.data || err
+                );
+            }
+        }
     };
 
     // Clear search inputs
