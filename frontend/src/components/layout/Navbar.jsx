@@ -30,8 +30,7 @@ const Navbar = () => {
     const location = useLocation();
     const [anchorEl, setAnchorEl] = useState(null);
 
-    const hideAuthenticatedNav = ['/', '/login', '/register'].includes(location.pathname);
-    const showAuthenticatedNav = isAuthenticated && !hideAuthenticatedNav;
+    const showAuthenticatedNav = isAuthenticated;
 
     const handleMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
