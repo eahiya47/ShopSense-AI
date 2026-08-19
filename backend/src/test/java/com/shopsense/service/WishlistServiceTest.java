@@ -130,6 +130,7 @@ public class WishlistServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getItems()).hasSize(1);
+        assertThat(response.getItems().get(0).getProductId()).isEqualTo(100L);
         assertThat(response.getItems().get(0).getProductName()).isEqualTo("Apple iPhone 16 Pro");
         assertThat(response.getItems().get(0).getVariantName()).isEqualTo("256GB / Natural Titanium");
     }

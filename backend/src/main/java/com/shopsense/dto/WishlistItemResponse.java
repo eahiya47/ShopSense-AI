@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class WishlistItemResponse {
     private Long id;
+    private Long productId;
     private Long productVariantId;
     private String productName;
     private String variantName;

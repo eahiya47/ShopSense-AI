@@ -135,6 +135,7 @@ public class WishlistControllerTest {
         void testGetUserWishlist_Success() throws Exception {
                 WishlistItemResponse item = WishlistItemResponse.builder()
                                 .id(10L)
+                                .productId(100L)
                                 .productVariantId(1002L)
                                 .productName("Apple iPhone 16 Pro")
                                 .variantName("256GB / Natural Titanium")

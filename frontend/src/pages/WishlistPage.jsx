@@ -15,7 +15,7 @@ import {
 import {
     Favorite,
     Delete,
-    ShoppingBag,
+    Visibility,
     Search,
     AccessTime,
 } from '@mui/icons-material';
@@ -69,8 +69,15 @@ const WishlistPage = () => {
     };
 
     const handleNavigateProduct = (item) => {
-        if (item.productName) {
-            navigate(`/search?q=${encodeURIComponent(item.productName)}`);
+        if (item && item.productId) {
+            navigate(`/products/${item.productId}`);
+        } else {
+            console.error('Product ID missing on wishlist item:', item);
+            setSnackbar({
+                open: true,
+                message: 'Unable to open product details: Product ID is missing.',
+                severity: 'error',
+            });
         }
     };
 
@@ -247,8 +254,9 @@ const WishlistPage = () => {
                                         <Button
                                             variant="outlined"
                                             fullWidth
-                                            startIcon={<ShoppingBag fontSize="small" />}
+                                            startIcon={<Visibility fontSize="small" />}
                                             onClick={() => handleNavigateProduct(item)}
+                                            aria-label={`View product details for ${item.productName || 'item'}`}
                                             sx={{
                                                 borderColor: 'rgba(99, 102, 241, 0.4)',
                                                 color: '#818cf8',
@@ -260,7 +268,7 @@ const WishlistPage = () => {
                                                 },
                                             }}
                                         >
-                                            Search Product
+                                            View Product
                                         </Button>
                                     </Box>
                                 </Paper>

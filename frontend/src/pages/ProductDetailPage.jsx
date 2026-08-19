@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     Container,
     Box,
@@ -18,6 +18,7 @@ import {
     Divider,
     Alert,
     CircularProgress,
+    Snackbar,
 } from '@mui/material';
 import {
     ArrowBack,
@@ -25,13 +26,21 @@ import {
     CheckCircle,
     Layers,
     ListAlt,
+    Favorite,
+    FavoriteBorder,
 } from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext';
 import {
     getProductById,
     getProductVariants,
     getVariantComparison,
     getVariantAIAnalysis,
 } from '../api/catalog';
+import {
+    addToWishlist,
+    getWishlist,
+    removeFromWishlist,
+} from '../api/userFeatures';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import ComparisonTable from '../components/product/ComparisonTable';
@@ -41,6 +50,8 @@ import AIAnalysisCard from '../components/product/AIAnalysisCard';
 const ProductDetailPage = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { isAuthenticated } = useAuth();
 
     // Product state
     const [product, setProduct] = useState(null);
@@ -53,6 +64,11 @@ const ProductDetailPage = () => {
     const [variantLoading, setVariantLoading] = useState(true);
     const [variantError, setVariantError] = useState(null);
 
+    // Wishlist state
+    const [wishlistedVariantIds, setWishlistedVariantIds] = useState(new Set());
+    const [wishlistActionLoading, setWishlistActionLoading] = useState(false);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+
     // Comparison state
     const [comparisonData, setComparisonData] = useState(null);
     const [comparisonLoading, setComparisonLoading] = useState(false);
@@ -64,6 +80,27 @@ const ProductDetailPage = () => {
     const [aiAnalysisError, setAiAnalysisError] = useState(null);
 
     const [imageError, setImageError] = useState(false);
+
+    // Fetch user wishlist items if authenticated
+    const fetchUserWishlist = useCallback(async () => {
+        if (!isAuthenticated) {
+            setWishlistedVariantIds(new Set());
+            return;
+        }
+
+        try {
+            const data = await getWishlist();
+            const items = data?.items || [];
+            const ids = new Set(items.map((item) => item.productVariantId));
+            setWishlistedVariantIds(ids);
+        } catch (err) {
+            console.error('Failed to load user wishlist:', err);
+        }
+    }, [isAuthenticated]);
+
+    useEffect(() => {
+        fetchUserWishlist();
+    }, [fetchUserWishlist]);
 
     // Fetch product details and variants
     const loadProductData = useCallback(async () => {
@@ -164,6 +201,70 @@ const ProductDetailPage = () => {
     const handleVariantSelect = (variant) => {
         setSelectedVariant(variant);
     };
+
+    // Toggle wishlist status for the currently selected variant
+    const handleToggleWishlist = async () => {
+        if (!isAuthenticated) {
+            navigate('/login', { state: { from: location } });
+            return;
+        }
+
+        if (!selectedVariant?.id || wishlistActionLoading) return;
+
+        const variantId = selectedVariant.id;
+        const isWishlisted = wishlistedVariantIds.has(variantId);
+        setWishlistActionLoading(true);
+
+        if (isWishlisted) {
+            try {
+                await removeFromWishlist(variantId);
+                setWishlistedVariantIds((prev) => {
+                    const next = new Set(prev);
+                    next.delete(variantId);
+                    return next;
+                });
+                setSnackbar({
+                    open: true,
+                    message: 'Variant removed from your wishlist.',
+                    severity: 'success',
+                });
+            } catch (err) {
+                console.error('Failed to remove from wishlist:', err);
+                setSnackbar({
+                    open: true,
+                    message: err?.response?.data?.message || 'Failed to remove variant from wishlist.',
+                    severity: 'error',
+                });
+            } finally {
+                setWishlistActionLoading(false);
+            }
+        } else {
+            try {
+                await addToWishlist(variantId);
+                setWishlistedVariantIds((prev) => new Set(prev).add(variantId));
+                setSnackbar({
+                    open: true,
+                    message: 'Variant added to your wishlist!',
+                    severity: 'success',
+                });
+            } catch (err) {
+                console.error('Failed to add to wishlist:', err);
+                setSnackbar({
+                    open: true,
+                    message: err?.response?.data?.message || 'Failed to add variant to wishlist.',
+                    severity: 'error',
+                });
+            } finally {
+                setWishlistActionLoading(false);
+            }
+        }
+    };
+
+    const handleCloseSnackbar = () => {
+        setSnackbar((prev) => ({ ...prev, open: false }));
+    };
+
+    const isCurrentVariantWishlisted = !!(selectedVariant?.id && wishlistedVariantIds.has(selectedVariant.id));
 
     if (productLoading) {
         return (
@@ -342,11 +443,59 @@ const ProductDetailPage = () => {
                                 borderRadius: 3,
                             }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                                <Layers sx={{ color: '#06b6d4', fontSize: '1.4rem' }} />
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#f8fafc' }}>
-                                    Select Variant
-                                </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1.5 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Layers sx={{ color: '#06b6d4', fontSize: '1.4rem' }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#f8fafc' }}>
+                                        Select Variant
+                                    </Typography>
+                                </Box>
+
+                                {/* Wishlist Action Button */}
+                                {selectedVariant && (
+                                    <Button
+                                        variant={isCurrentVariantWishlisted ? 'contained' : 'outlined'}
+                                        size="small"
+                                        disabled={wishlistActionLoading}
+                                        onClick={handleToggleWishlist}
+                                        startIcon={
+                                            wishlistActionLoading ? (
+                                                <CircularProgress size={16} color="inherit" />
+                                            ) : isCurrentVariantWishlisted ? (
+                                                <Favorite sx={{ color: '#ec4899', fontSize: '1.1rem !important' }} />
+                                            ) : (
+                                                <FavoriteBorder sx={{ fontSize: '1.1rem !important' }} />
+                                            )
+                                        }
+                                        aria-label={
+                                            !isAuthenticated
+                                                ? 'Sign in to save variant to wishlist'
+                                                : isCurrentVariantWishlisted
+                                                    ? 'Remove variant from wishlist'
+                                                    : 'Add variant to wishlist'
+                                        }
+                                        sx={{
+                                            textTransform: 'none',
+                                            fontWeight: 600,
+                                            borderRadius: 2,
+                                            px: 2,
+                                            py: 0.8,
+                                            borderColor: isCurrentVariantWishlisted ? '#ec4899' : 'rgba(236, 72, 153, 0.4)',
+                                            bgcolor: isCurrentVariantWishlisted ? 'rgba(236, 72, 153, 0.15)' : 'transparent',
+                                            color: isCurrentVariantWishlisted ? '#ec4899' : '#f472b6',
+                                            '&:hover': {
+                                                borderColor: '#ec4899',
+                                                bgcolor: 'rgba(236, 72, 153, 0.25)',
+                                            },
+                                        }}
+                                    >
+                                        {!isAuthenticated
+                                            ? 'Sign in to save'
+                                            : isCurrentVariantWishlisted
+                                                ? 'In Wishlist'
+                                                : 'Add to Wishlist'}
+                                    </Button>
+                                )}
                             </Box>
 
                             {/* Variant Loading */}
@@ -546,6 +695,18 @@ const ProductDetailPage = () => {
                     )}
                 </Box>
             )}
+
+            {/* Wishlist Action Feedback Snackbar */}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={4000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

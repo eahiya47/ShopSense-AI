@@ -97,6 +97,7 @@ public class WishlistServiceImpl implements WishlistService {
 
         return WishlistItemResponse.builder()
                 .id(wishlist.getId())
+                .productId(product.getId())
                 .productVariantId(variant.getId())
                 .productName(productName)
                 .variantName(variant.getVariantName())
