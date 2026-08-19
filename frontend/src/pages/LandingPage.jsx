@@ -18,11 +18,16 @@ import {
     Psychology,
     Shield,
     ArrowForward,
+    Dashboard as DashboardIcon,
+    Favorite as FavoriteIcon,
 } from '@mui/icons-material';
 
+import { useAuth } from '../context/AuthContext';
 import QuickSearchBar from '../components/product/QuickSearchBar';
 
 const LandingPage = () => {
+    const { isAuthenticated } = useAuth();
+
     return (
         <Box sx={{ minHeight: '80vh' }}>
             {/* Hero Section */}
@@ -74,37 +79,77 @@ const LandingPage = () => {
                     </Box>
 
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
-                        <Button
-                            component={RouterLink}
-                            to="/register"
-                            variant="contained"
-                            size="large"
-                            endIcon={<ArrowForward />}
-                            sx={{
-                                py: 1.8,
-                                px: 4,
-                                fontSize: '1.05rem',
-                                background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-                            }}
-                        >
-                            Get Started Free
-                        </Button>
-                        <Button
-                            component={RouterLink}
-                            to="/login"
-                            variant="outlined"
-                            size="large"
-                            sx={{
-                                py: 1.8,
-                                px: 4,
-                                fontSize: '1.05rem',
-                                borderColor: 'rgba(255, 255, 255, 0.2)',
-                                color: '#f8fafc',
-                                '&:hover': { borderColor: '#6366f1', bgcolor: 'rgba(99, 102, 241, 0.1)' },
-                            }}
-                        >
-                            Sign In to Account
-                        </Button>
+                        {isAuthenticated ? (
+                            <>
+                                <Button
+                                    component={RouterLink}
+                                    to="/dashboard"
+                                    variant="contained"
+                                    size="large"
+                                    startIcon={<DashboardIcon />}
+                                    endIcon={<ArrowForward />}
+                                    sx={{
+                                        py: 1.8,
+                                        px: 4,
+                                        fontSize: '1.05rem',
+                                        background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                                    }}
+                                >
+                                    Go to Dashboard
+                                </Button>
+                                <Button
+                                    component={RouterLink}
+                                    to="/wishlist"
+                                    variant="outlined"
+                                    size="large"
+                                    startIcon={<FavoriteIcon />}
+                                    sx={{
+                                        py: 1.8,
+                                        px: 4,
+                                        fontSize: '1.05rem',
+                                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                                        color: '#f8fafc',
+                                        '&:hover': { borderColor: '#ec4899', bgcolor: 'rgba(236, 72, 153, 0.1)' },
+                                    }}
+                                >
+                                    View Wishlist
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    component={RouterLink}
+                                    to="/register"
+                                    variant="contained"
+                                    size="large"
+                                    endIcon={<ArrowForward />}
+                                    sx={{
+                                        py: 1.8,
+                                        px: 4,
+                                        fontSize: '1.05rem',
+                                        background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                                    }}
+                                >
+                                    Get Started Free
+                                </Button>
+                                <Button
+                                    component={RouterLink}
+                                    to="/login"
+                                    variant="outlined"
+                                    size="large"
+                                    sx={{
+                                        py: 1.8,
+                                        px: 4,
+                                        fontSize: '1.05rem',
+                                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                                        color: '#f8fafc',
+                                        '&:hover': { borderColor: '#6366f1', bgcolor: 'rgba(99, 102, 241, 0.1)' },
+                                    }}
+                                >
+                                    Sign In to Account
+                                </Button>
+                            </>
+                        )}
                     </Stack>
                 </Box>
 

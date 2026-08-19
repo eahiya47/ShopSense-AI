@@ -217,14 +217,14 @@ public class GeminiAIService implements AIService {
                 VariantReviewsResponse reviewsResponse = reviewService.getReviewsForVariant(variant.getId(), null, 15);
                 List<AIStructuredInput.ReviewItem> reviews = Collections.emptyList();
                 if (reviewsResponse != null && reviewsResponse.getReviews() != null) {
-                        String platformName = reviewsResponse.getPlatform() != null
-                                        ? reviewsResponse.getPlatform().getName()
-                                        : "General";
                         reviews = reviewsResponse.getReviews().stream()
                                         .map((ReviewResponse r) -> AIStructuredInput.ReviewItem.builder()
-                                                        .platformName(platformName)
+                                                        .platformName(r.getPlatformName() != null ? r.getPlatformName()
+                                                                        : "General")
                                                         .rating(r.getRating())
+                                                        .title(r.getReviewTitle())
                                                         .text(r.getReviewText())
+                                                        .verifiedPurchase(r.getVerifiedPurchase())
                                                         .reviewDate(r.getReviewDate() != null
                                                                         ? r.getReviewDate().toString()
                                                                         : null)
@@ -250,23 +250,30 @@ public class GeminiAIService implements AIService {
         private String buildPrompt(AIStructuredInput input) throws Exception {
                 String inputJson = objectMapper.writeValueAsString(input);
                 return """
-                                You are ShopSense AI, a neutral product comparison assistant.
-                                Analyze ONLY the provided structured product variant data below.
+                                You are ShopSense AI, an expert e-commerce comparison assistant.
+                                Analyze ONLY the provided structured product variant, marketplace offer, and review data below.
 
                                 CRITICAL RULES:
-                                1. Do NOT invent prices, specifications, reviews, ratings, seller information, or availability.
-                                2. Treat the provided marketplace comparison and reviews as authoritative.
-                                3. If information is unavailable or missing, state that it is not available.
-                                4. Focus strictly on the selected product variant: %s - %s.
-                                5. Return ONLY a valid JSON object matching the following structure with no markdown wrapping:
+                                1. Evaluate and compare available platforms (e.g. Amazon, Flipkart, Croma, Reliance Digital) using ONLY the supplied data.
+                                2. Compare platforms based on:
+                                   - Listed current price and discount vs original price
+                                   - Availability status and details
+                                   - Seller name and seller rating
+                                   - Delivery information
+                                   - Platform-specific review sentiment and review ratings
+                                3. Do NOT invent prices, delivery times, seller ratings, review ratings, or platform offers.
+                                4. If delivery information, seller rating, or review data is missing for a platform, explicitly state that it is unavailable for that platform rather than making assumptions.
+                                5. If data is insufficient to recommend a platform, state that clearly in bestOfferRecommendation and buyingGuidance.
+                                6. Focus strictly on the selected product variant: %s - %s.
+                                7. Return ONLY a valid JSON object matching the following structure with no markdown wrapping:
                                 {
-                                  "summary": "Concise summary of product and offer analysis",
-                                  "strengths": ["Strength 1", "Strength 2"],
-                                  "drawbacks": ["Drawback 1"],
-                                  "valueAssessment": "Assessment of value for money based on prices",
-                                  "reviewInsights": "Summary of recent customer reviews sample",
-                                  "bestOfferRecommendation": "Explanation of current best offer",
-                                  "buyingGuidance": "Practical buying guidance"
+                                  "summary": "Concise summary of product features and multi-platform offer analysis",
+                                  "strengths": ["Key product or platform strength 1", "Strength 2"],
+                                  "drawbacks": ["Key drawback or limitation 1"],
+                                  "valueAssessment": "Detailed marketplace price and value comparison across listed platforms",
+                                  "reviewInsights": "Synthesis of platform-specific customer review sentiment and feedback",
+                                  "bestOfferRecommendation": "Clear recommendation of best overall marketplace offer (or notice if insufficient data)",
+                                  "buyingGuidance": "Actionable, platform-aware advice on where and how to purchase"
                                 }
 
                                 STRUCTURED INPUT DATA:

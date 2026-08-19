@@ -113,6 +113,7 @@ public class ReviewServiceTest {
         assertEquals(1002L, response.getVariantId());
         assertEquals(1, response.getReviews().size());
         assertEquals("Test User", response.getReviews().get(0).getReviewerName());
+        assertEquals("Amazon", response.getReviews().get(0).getPlatformName());
 
         verifyNoInteractions(connectorManager);
     }

@@ -207,6 +207,18 @@ const ReviewList = ({ variantId, platforms = [] }) => {
                                                 {review.reviewerName || 'Anonymous Reviewer'}
                                             </Typography>
 
+                                            <Chip
+                                                label={review.platformName || 'Platform unavailable'}
+                                                size="small"
+                                                sx={{
+                                                    bgcolor: 'rgba(99, 102, 241, 0.12)',
+                                                    color: '#818cf8',
+                                                    border: '1px solid rgba(99, 102, 241, 0.25)',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            />
+
                                             {review.verifiedPurchase && (
                                                 <Chip
                                                     icon={<VerifiedUser sx={{ fontSize: '0.85rem !important', color: '#34d399 !important' }} />}

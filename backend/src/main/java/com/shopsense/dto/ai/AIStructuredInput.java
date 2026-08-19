@@ -68,7 +68,9 @@ public class AIStructuredInput {
     public static class ReviewItem {
         private String platformName;
         private BigDecimal rating;
+        private String title;
         private String text;
+        private Boolean verifiedPurchase;
         private String reviewDate;
     }
 }

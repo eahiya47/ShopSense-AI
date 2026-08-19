@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ReviewResponse {
     private Long id;
+    private String platformName;
     private String reviewerName;
     private BigDecimal rating;
     private String reviewTitle;

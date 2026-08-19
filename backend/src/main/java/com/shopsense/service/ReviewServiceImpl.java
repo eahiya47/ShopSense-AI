@@ -171,8 +171,10 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     private ReviewResponse mapToReviewResponse(Review review) {
+        String platformName = (review.getPlatform() != null) ? review.getPlatform().getName() : null;
         return ReviewResponse.builder()
                 .id(review.getId())
+                .platformName(platformName)
                 .reviewerName(review.getReviewerName())
                 .rating(review.getRating())
                 .reviewTitle(review.getReviewTitle())
