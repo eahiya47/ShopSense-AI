@@ -15,6 +15,8 @@ api.interceptors.request.use(
         const token = localStorage.getItem('token');
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
+        } else {
+            delete config.headers['Authorization'];
         }
         return config;
     },
@@ -31,6 +33,9 @@ api.interceptors.response.use(
             // Clear token if expired or invalid
             localStorage.removeItem('token');
             localStorage.removeItem('user');
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('auth:unauthorized'));
+            }
         }
         return Promise.reject(error);
     }

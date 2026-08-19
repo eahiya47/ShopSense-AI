@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext(null);
@@ -7,6 +7,13 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('token') || null);
     const [loading, setLoading] = useState(true);
+
+    const logout = useCallback(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setToken(null);
+        setUser(null);
+    }, []);
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -20,12 +27,25 @@ export const AuthProvider = ({ children }) => {
                     console.error('Failed to load user profile from stored token:', error);
                     logout();
                 }
+            } else {
+                setToken(null);
+                setUser(null);
             }
             setLoading(false);
         };
 
         initializeAuth();
-    }, []);
+    }, [logout]);
+
+    useEffect(() => {
+        const handleUnauthorized = () => {
+            logout();
+        };
+        window.addEventListener('auth:unauthorized', handleUnauthorized);
+        return () => {
+            window.removeEventListener('auth:unauthorized', handleUnauthorized);
+        };
+    }, [logout]);
 
     const login = async (email, password) => {
         const response = await api.post('/auth/login', { email, password });
@@ -68,13 +88,6 @@ export const AuthProvider = ({ children }) => {
         }
 
         return response.data;
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setToken(null);
-        setUser(null);
     };
 
     const value = {
