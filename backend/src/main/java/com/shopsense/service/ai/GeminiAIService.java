@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import com.shopsense.repository.PlatformOfferRepository;
@@ -126,6 +128,14 @@ public class GeminiAIService implements AIService {
                         return false;
                 }
 
+                // Invalidate legacy generic mock summary if present in cache
+                if (cached.getSummary() != null && cached.getSummary()
+                                .contains("This variant offers an excellent balance of high performance")) {
+                        log.info("AI Analysis cache contained legacy generic mock summary for variant id: {}. Invalidating.",
+                                        variantId);
+                        return false;
+                }
+
                 LocalDateTime generatedAt = cached.getGeneratedAt();
 
                 // 2. Marketplace Offer Freshness Check
@@ -195,21 +205,48 @@ public class GeminiAIService implements AIService {
                 ProductComparisonResponse comparison = comparisonService.getComparisonForVariant(variant.getId());
                 List<AIStructuredInput.OfferItem> offers = Collections.emptyList();
                 if (comparison != null && comparison.getOffers() != null) {
+                        BigDecimal minPrice = null;
+                        for (ComparisonOfferResponse o : comparison.getOffers()) {
+                                if (o.getCurrentPrice() != null) {
+                                        if (minPrice == null || o.getCurrentPrice().compareTo(minPrice) < 0) {
+                                                minPrice = o.getCurrentPrice();
+                                        }
+                                }
+                        }
+                        final BigDecimal lowestPrice = minPrice;
+
                         offers = comparison.getOffers().stream()
-                                        .map((ComparisonOfferResponse o) -> AIStructuredInput.OfferItem.builder()
-                                                        .platformName(o.getPlatform() != null
-                                                                        ? o.getPlatform().getName()
-                                                                        : "Unknown Platform")
-                                                        .currentPrice(o.getCurrentPrice())
-                                                        .originalPrice(o.getOriginalPrice())
-                                                        .currency(o.getCurrency())
-                                                        .sellerName(o.getSellerName())
-                                                        .sellerRating(o.getSellerRating())
-                                                        .availabilityStatus(o.getAvailabilityStatus())
-                                                        .availabilityDetails(o.getAvailabilityDetails())
-                                                        .deliveryInfo(o.getDeliveryInfo())
-                                                        .offerDetails(o.getOfferDetails())
-                                                        .build())
+                                        .map((ComparisonOfferResponse o) -> {
+                                                BigDecimal current = o.getCurrentPrice();
+                                                BigDecimal original = o.getOriginalPrice();
+                                                BigDecimal discountPct = null;
+                                                if (current != null && original != null
+                                                                && original.compareTo(BigDecimal.ZERO) > 0
+                                                                && current.compareTo(original) <= 0) {
+                                                        BigDecimal diff = original.subtract(current);
+                                                        discountPct = diff.multiply(BigDecimal.valueOf(100))
+                                                                        .divide(original, 1, RoundingMode.HALF_UP);
+                                                }
+                                                boolean isCheapest = (current != null && lowestPrice != null
+                                                                && current.compareTo(lowestPrice) == 0);
+
+                                                return AIStructuredInput.OfferItem.builder()
+                                                                .platformName(o.getPlatform() != null
+                                                                                ? o.getPlatform().getName()
+                                                                                : "Unknown Platform")
+                                                                .currentPrice(current)
+                                                                .originalPrice(original)
+                                                                .currency(o.getCurrency())
+                                                                .sellerName(o.getSellerName())
+                                                                .sellerRating(o.getSellerRating())
+                                                                .availabilityStatus(o.getAvailabilityStatus())
+                                                                .availabilityDetails(o.getAvailabilityDetails())
+                                                                .deliveryInfo(o.getDeliveryInfo())
+                                                                .offerDetails(o.getOfferDetails())
+                                                                .discountPercentage(discountPct)
+                                                                .isCheapest(isCheapest)
+                                                                .build();
+                                        })
                                         .toList();
                 }
 
@@ -250,30 +287,28 @@ public class GeminiAIService implements AIService {
         private String buildPrompt(AIStructuredInput input) throws Exception {
                 String inputJson = objectMapper.writeValueAsString(input);
                 return """
-                                You are ShopSense AI, an expert e-commerce comparison assistant.
-                                Analyze ONLY the provided structured product variant, marketplace offer, and review data below.
+                                You are ShopSense AI, an expert e-commerce marketplace comparison assistant.
+                                Your PRIMARY objective is to provide a comprehensive, marketplace-focused comparison across the available selling platforms for the specified product variant.
 
                                 CRITICAL RULES:
-                                1. Evaluate and compare available platforms (e.g. Amazon, Flipkart, Croma, Reliance Digital) using ONLY the supplied data.
-                                2. Compare platforms based on:
-                                   - Listed current price and discount vs original price
-                                   - Availability status and details
-                                   - Seller name and seller rating
-                                   - Delivery information
-                                   - Platform-specific review sentiment and review ratings
-                                3. Do NOT invent prices, delivery times, seller ratings, review ratings, or platform offers.
-                                4. If delivery information, seller rating, or review data is missing for a platform, explicitly state that it is unavailable for that platform rather than making assumptions.
-                                5. If data is insufficient to recommend a platform, state that clearly in bestOfferRecommendation and buyingGuidance.
-                                6. Focus strictly on the selected product variant: %s - %s.
-                                7. Return ONLY a valid JSON object matching the following structure with no markdown wrapping:
+                                1. Evaluate and contrast ONLY the platforms listed in the input data. Use explicit platform names, exact price figures, discounts, delivery terms, and seller ratings supplied in marketplaceOffers.
+                                2. "strengths" MUST focus primarily on platform-specific advantages (e.g., "Flipkart offers the lowest base price at ₹1,26,999 with a 5.8%% discount", "Amazon provides the fastest shipping via FREE One-Day Delivery", "Croma includes an additional flat ₹3,000 instant bank discount").
+                                3. "drawbacks" MUST focus primarily on platform-specific trade-offs or limitations (e.g., "Croma lists a higher base price of ₹1,29,900", "Reliance Digital has a longer 2-day delivery window", "Croma has limited stock remaining").
+                                4. "summary" MUST provide a clear overview comparing market pricing, best platform deals, and overall fulfillment options.
+                                5. "valueAssessment" MUST compare current prices, MRP discounts, bank offers, and monetary value across the listed platforms.
+                                6. "reviewInsights" MUST summarize platform-specific customer sentiment if reviews exist for that platform.
+                                7. "bestOfferRecommendation" MUST explicitly state the top recommended marketplace option based on price, delivery, or bank cashback.
+                                8. Do NOT invent prices, delivery times, seller ratings, or platform offers not present in the input data.
+                                9. Focus strictly on the selected product variant: %s - %s.
+                                10. Return ONLY a valid JSON object matching the following structure with no markdown wrapping:
                                 {
-                                  "summary": "Concise summary of product features and multi-platform offer analysis",
-                                  "strengths": ["Key product or platform strength 1", "Strength 2"],
-                                  "drawbacks": ["Key drawback or limitation 1"],
-                                  "valueAssessment": "Detailed marketplace price and value comparison across listed platforms",
-                                  "reviewInsights": "Synthesis of platform-specific customer review sentiment and feedback",
-                                  "bestOfferRecommendation": "Clear recommendation of best overall marketplace offer (or notice if insufficient data)",
-                                  "buyingGuidance": "Actionable, platform-aware advice on where and how to purchase"
+                                  "summary": "Marketplace-focused summary comparing prices, deals, and delivery across platforms",
+                                  "strengths": ["Platform advantage 1 with platform name and price/offer detail", "Platform advantage 2"],
+                                  "drawbacks": ["Platform limitation/trade-off 1 with platform name", "Platform trade-off 2"],
+                                  "valueAssessment": "Detailed marketplace price and value breakdown across platforms",
+                                  "reviewInsights": "Platform-specific customer feedback and sentiment synthesis",
+                                  "bestOfferRecommendation": "Clear recommendation declaring the best platform deal and why",
+                                  "buyingGuidance": "Actionable advice on bank offers, shipping speed, and purchase strategy"
                                 }
 
                                 STRUCTURED INPUT DATA:

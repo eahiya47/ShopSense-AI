@@ -59,6 +59,8 @@ public class AIStructuredInput {
         private String availabilityDetails;
         private String deliveryInfo;
         private String offerDetails;
+        private BigDecimal discountPercentage;
+        private Boolean isCheapest;
     }
 
     @Data
