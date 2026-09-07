@@ -63,3 +63,18 @@ export const getVariantAIAnalysis = async (variantId) => {
     const response = await api.get(`/variants/${variantId}/ai-analysis`);
     return response.data;
 };
+
+/**
+ * Get historical price snapshots for a product variant.
+ * GET /api/v1/variants/{variantId}/price-history
+ */
+export const getVariantPriceHistory = async (variantId, { platformId, startDate, endDate } = {}) => {
+    const params = {};
+    if (platformId) params.platformId = platformId;
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+
+    const response = await api.get(`/variants/${variantId}/price-history`, { params });
+    return response.data;
+};
+

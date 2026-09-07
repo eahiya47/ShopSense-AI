@@ -135,3 +135,22 @@ CREATE TABLE IF NOT EXISTS platform_offers (
     INDEX idx_offers_variant (product_variant_id),
     INDEX idx_offers_platform (platform_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `price_history`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS price_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_variant_id BIGINT NOT NULL,
+    platform_id BIGINT NOT NULL,
+    price DECIMAL(12,2) NOT NULL,
+    original_price DECIMAL(12,2) DEFAULT NULL,
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
+    FOREIGN KEY (platform_id) REFERENCES platforms(id),
+    INDEX idx_price_history_variant (product_variant_id),
+    INDEX idx_price_history_platform (platform_id),
+    INDEX idx_price_history_recorded (recorded_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

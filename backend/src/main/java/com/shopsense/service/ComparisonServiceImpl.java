@@ -35,6 +35,7 @@ public class ComparisonServiceImpl implements ComparisonService {
     private final PlatformRepository platformRepository;
     private final PlatformOfferRepository platformOfferRepository;
     private final ConnectorManager connectorManager;
+    private final PriceHistoryService priceHistoryService;
 
     @Override
     @Transactional
@@ -122,6 +123,14 @@ public class ComparisonServiceImpl implements ComparisonService {
                 }
 
                 PlatformOffer savedOffer = platformOfferRepository.save(platformOffer);
+
+                priceHistoryService.recordPriceSnapshotIfNeeded(
+                        variant,
+                        platform,
+                        savedOffer.getCurrentPrice(),
+                        savedOffer.getOriginalPrice(),
+                        savedOffer.getCurrency()
+                );
 
                 PlatformResponse platformResponse = PlatformResponse.builder()
                         .id(platform.getId())

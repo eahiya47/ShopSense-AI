@@ -35,6 +35,7 @@ import {
     getProductVariants,
     getVariantComparison,
     getVariantAIAnalysis,
+    getVariantPriceHistory,
 } from '../api/catalog';
 import {
     addToWishlist,
@@ -44,6 +45,7 @@ import {
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import ComparisonTable from '../components/product/ComparisonTable';
+import PriceHistoryChart from '../components/product/PriceHistoryChart';
 import ReviewList from '../components/product/ReviewList';
 import AIAnalysisCard from '../components/product/AIAnalysisCard';
 
@@ -78,6 +80,11 @@ const ProductDetailPage = () => {
     const [aiAnalysisData, setAiAnalysisData] = useState(null);
     const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
     const [aiAnalysisError, setAiAnalysisError] = useState(null);
+
+    // Price History state
+    const [priceHistoryData, setPriceHistoryData] = useState(null);
+    const [priceHistoryLoading, setPriceHistoryLoading] = useState(false);
+    const [priceHistoryError, setPriceHistoryError] = useState(null);
 
     const [imageError, setImageError] = useState(false);
 
@@ -175,6 +182,24 @@ const ProductDetailPage = () => {
         }
     }, []);
 
+    // Fetch Price History data for the selected variant
+    const loadPriceHistoryData = useCallback(async (variantId) => {
+        if (!variantId) return;
+
+        setPriceHistoryLoading(true);
+        setPriceHistoryError(null);
+
+        try {
+            const historyData = await getVariantPriceHistory(variantId);
+            setPriceHistoryData(historyData);
+        } catch (err) {
+            console.error('Failed to fetch price history:', err);
+            setPriceHistoryError(err?.response?.data?.message || 'Failed to load product price history.');
+        } finally {
+            setPriceHistoryLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         loadProductData();
     }, [loadProductData]);
@@ -196,6 +221,15 @@ const ProductDetailPage = () => {
             setAiAnalysisData(null);
         }
     }, [selectedVariant?.id, loadAIAnalysisData]);
+
+    // Trigger price history fetch when selected variant changes
+    useEffect(() => {
+        if (selectedVariant?.id) {
+            loadPriceHistoryData(selectedVariant.id);
+        } else {
+            setPriceHistoryData(null);
+        }
+    }, [selectedVariant?.id, loadPriceHistoryData]);
 
     // Handle variant selection
     const handleVariantSelect = (variant) => {
@@ -670,6 +704,16 @@ const ProductDetailPage = () => {
                         <ComparisonTable comparisonData={comparisonData} />
                     )}
                 </Box>
+            )}
+
+            {/* Product Price History Section */}
+            {selectedVariant?.id && (
+                <PriceHistoryChart
+                    priceHistoryData={priceHistoryData}
+                    loading={priceHistoryLoading}
+                    error={priceHistoryError}
+                    onRetry={() => loadPriceHistoryData(selectedVariant.id)}
+                />
             )}
 
             {/* Customer Reviews Section */}

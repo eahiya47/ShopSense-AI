@@ -46,6 +46,9 @@ public class ComparisonServiceTest {
     @Mock
     private ConnectorManager connectorManager;
 
+    @Mock
+    private PriceHistoryService priceHistoryService;
+
     @InjectMocks
     private ComparisonServiceImpl comparisonService;
 
