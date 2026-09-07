@@ -61,7 +61,7 @@ public class PriceHistoryServiceTest {
     @Test
     @DisplayName("Should create initial price history snapshot when no prior history exists")
     void testRecordPriceSnapshot_InitialCreation() {
-        when(priceHistoryRepository.findTopByProductVariantIdAndPlatformIdOrderByRecordedAtDesc(101L, 1L))
+        when(priceHistoryRepository.findTopByProductVariantIdAndPlatformIdOrderByIdDesc(101L, 1L))
                 .thenReturn(Optional.empty());
 
         priceHistoryService.recordPriceSnapshotIfNeeded(
@@ -94,7 +94,7 @@ public class PriceHistoryServiceTest {
                 .recordedAt(LocalDateTime.now().minusDays(1))
                 .build();
 
-        when(priceHistoryRepository.findTopByProductVariantIdAndPlatformIdOrderByRecordedAtDesc(101L, 1L))
+        when(priceHistoryRepository.findTopByProductVariantIdAndPlatformIdOrderByIdDesc(101L, 1L))
                 .thenReturn(Optional.of(previousSnapshot));
 
         priceHistoryService.recordPriceSnapshotIfNeeded(
@@ -123,7 +123,7 @@ public class PriceHistoryServiceTest {
                 .recordedAt(LocalDateTime.now().minusDays(1))
                 .build();
 
-        when(priceHistoryRepository.findTopByProductVariantIdAndPlatformIdOrderByRecordedAtDesc(101L, 1L))
+        when(priceHistoryRepository.findTopByProductVariantIdAndPlatformIdOrderByIdDesc(101L, 1L))
                 .thenReturn(Optional.of(previousSnapshot));
 
         priceHistoryService.recordPriceSnapshotIfNeeded(

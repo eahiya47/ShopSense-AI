@@ -21,7 +21,7 @@ public interface PriceHistoryRepository extends JpaRepository<PriceHistory, Long
     List<PriceHistory> findByProductVariantIdAndPlatformIdAndRecordedAtBetweenOrderByRecordedAtAsc(
             Long productVariantId, Long platformId, LocalDateTime startDate, LocalDateTime endDate);
 
-    Optional<PriceHistory> findTopByProductVariantIdAndPlatformIdOrderByRecordedAtDesc(Long productVariantId, Long platformId);
+    Optional<PriceHistory> findTopByProductVariantIdAndPlatformIdOrderByIdDesc(Long productVariantId, Long platformId);
 
     void deleteByProductVariantId(Long productVariantId);
 }

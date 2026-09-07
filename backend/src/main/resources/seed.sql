@@ -19,6 +19,7 @@ USE shopsense_db;
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE reviews;
 TRUNCATE TABLE platform_offers;
+TRUNCATE TABLE price_history;
 TRUNCATE TABLE variant_attributes;
 TRUNCATE TABLE product_specifications;
 TRUNCATE TABLE product_variants;
@@ -256,3 +257,38 @@ INSERT INTO reviews (id, product_variant_id, platform_id, reviewer_name, rating,
 INSERT IGNORE INTO users (id, name, email, password, role, country, region, created_at, updated_at) VALUES
 (1, 'Demo User', 'demo@shopsense.ai', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07Xd0XDMxs.AQ84d62', 'ROLE_USER', 'India', 'Maharashtra', NOW(), NOW()),
 (2, 'Test Buyer', 'testbuyer@shopsense.ai', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07Xd0XDMxs.AQ84d62', 'ROLE_USER', 'India', 'Karnataka', NOW(), NOW());
+
+-- ------------------------------------------------------------------------------
+-- 10. PRICE HISTORY (Development/Demo Sample Historical Snapshots)
+-- ------------------------------------------------------------------------------
+INSERT INTO price_history (id, product_variant_id, platform_id, price, original_price, currency, recorded_at) VALUES
+-- Variant 101: iPhone 15 Pro 256GB
+(1, 101, 1, 134900.00, 134900.00, 'INR', DATE_SUB(NOW(), INTERVAL 30 DAY)),
+(2, 101, 1, 132900.00, 134900.00, 'INR', DATE_SUB(NOW(), INTERVAL 20 DAY)),
+(3, 101, 1, 129900.00, 134900.00, 'INR', DATE_SUB(NOW(), INTERVAL 10 DAY)),
+(4, 101, 1, 127990.00, 134900.00, 'INR', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+
+(5, 101, 2, 134900.00, 134900.00, 'INR', DATE_SUB(NOW(), INTERVAL 30 DAY)),
+(6, 101, 2, 131990.00, 134900.00, 'INR', DATE_SUB(NOW(), INTERVAL 15 DAY)),
+(7, 101, 2, 126999.00, 134900.00, 'INR', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+
+(8, 101, 3, 134900.00, 134900.00, 'INR', DATE_SUB(NOW(), INTERVAL 30 DAY)),
+(9, 101, 3, 129900.00, 134900.00, 'INR', DATE_SUB(NOW(), INTERVAL 12 DAY)),
+
+-- Variant 103: Galaxy S24 Ultra 256GB
+(10, 103, 1, 129999.00, 129999.00, 'INR', DATE_SUB(NOW(), INTERVAL 25 DAY)),
+(11, 103, 1, 124999.00, 129999.00, 'INR', DATE_SUB(NOW(), INTERVAL 14 DAY)),
+(12, 103, 1, 121999.00, 129999.00, 'INR', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+
+(13, 103, 2, 129999.00, 129999.00, 'INR', DATE_SUB(NOW(), INTERVAL 25 DAY)),
+(14, 103, 2, 122999.00, 129999.00, 'INR', DATE_SUB(NOW(), INTERVAL 10 DAY)),
+(15, 103, 2, 119999.00, 129999.00, 'INR', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+
+-- Variant 105: MacBook Air M3 8GB/256GB
+(16, 105, 1, 114900.00, 114900.00, 'INR', DATE_SUB(NOW(), INTERVAL 28 DAY)),
+(17, 105, 1, 109900.00, 114900.00, 'INR', DATE_SUB(NOW(), INTERVAL 14 DAY)),
+(18, 105, 1, 104990.00, 114900.00, 'INR', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+
+(19, 105, 2, 114900.00, 114900.00, 'INR', DATE_SUB(NOW(), INTERVAL 28 DAY)),
+(20, 105, 2, 108490.00, 114900.00, 'INR', DATE_SUB(NOW(), INTERVAL 12 DAY)),
+(21, 105, 2, 103990.00, 114900.00, 'INR', DATE_SUB(NOW(), INTERVAL 2 DAY));

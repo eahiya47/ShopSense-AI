@@ -41,7 +41,7 @@ public class PriceHistoryServiceImpl implements PriceHistoryService {
         }
 
         Optional<PriceHistory> latestSnapshotOpt = priceHistoryRepository
-                .findTopByProductVariantIdAndPlatformIdOrderByRecordedAtDesc(variant.getId(), platform.getId());
+                .findTopByProductVariantIdAndPlatformIdOrderByIdDesc(variant.getId(), platform.getId());
 
         if (latestSnapshotOpt.isPresent()) {
             PriceHistory latestSnapshot = latestSnapshotOpt.get();
